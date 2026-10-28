@@ -1,0 +1,12 @@
+# Merge these tables into your project's .codex/config.toml.
+# This example places the dev-cycle-skills clone next to the target project.
+# Start Codex from the target project's root; adjust source for your folder layout.
+# Use forward slashes on Windows too.
+# Keep one copy of each table if the file already contains it.
+# Codex loads this file only after you trust the project.
+[marketplaces.dev-cycle-skills]
+source_type = "local"
+source = "../dev-cycle-skills"
+
+[plugins."dev-cycle@dev-cycle-skills"]
+enabled = true

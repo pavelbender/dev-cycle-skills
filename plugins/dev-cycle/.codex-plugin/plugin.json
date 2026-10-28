@@ -1,0 +1,22 @@
+{
+  "name": "dev-cycle",
+  "version": "0.1.0",
+  "description": "Plan a feature into a bundle of task files, execute and validate each task in its own git worktree, merge. Works in Claude Code and Codex.",
+  "author": {
+    "name": "Pavel Bender"
+  },
+  "homepage": "https://github.com/pavelbender/dev-cycle-skills",
+  "repository": "https://github.com/pavelbender/dev-cycle-skills",
+  "keywords": ["planning", "tasks", "worktree", "validation", "agent-skills", "codex"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Dev Cycle",
+    "shortDescription": "Plan, implement and validate",
+    "longDescription": "Take a feature from intent through scenarios, workflow, task files, implementation and validation in git worktrees, then merge. Reads project-specific commands and conventions from AGENTS.md or CLAUDE.md.",
+    "developerName": "Pavel Bender",
+    "category": "Developer Tools",
+    "capabilities": ["Feature planning", "Task execution", "Validation"],
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
+  }
+}
