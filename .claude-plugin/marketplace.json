@@ -1,0 +1,14 @@
+{
+  "name": "dev-cycle-skills",
+  "description": "Agent skills for a documented development cycle: scenarios, workflow, task sequence, task files, execution with validation in worktrees, merge.",
+  "owner": {
+    "name": "Pavel Bender"
+  },
+  "plugins": [
+    {
+      "name": "dev-cycle",
+      "source": "./plugins/dev-cycle",
+      "description": "Plan a feature into a bundle of task files, execute and validate each task in its own git worktree, merge. Works in Claude Code and Codex."
+    }
+  ]
+}
