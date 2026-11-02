@@ -3,7 +3,7 @@
 # install/uninstall/pause/resume/status manage one task per repository and job in the
 # \dev-cycle\ task folder. Each task runs the stable copy ~/.claude/agent-jobs/agent-job.ps1
 # -Action run, which composes the prompt from the installed dev-cycle plugin at run time, so
-# plugin updates need no reinstall.
+# plugin updates need no reinstall. Linux and macOS counterpart: agent-job.sh.
 param(
     [Parameter(Mandatory)][ValidateSet('install', 'uninstall', 'pause', 'resume', 'status', 'run')]
     [string]$Action,
@@ -166,6 +166,7 @@ Stop and wrap up by: $(($deadline - $wrapUp).ToString('s'))
 Hard deadline: $($deadline.ToString('s')) (the process tree is killed then)
 Mode: $(if ($DryRun) { 'DRY RUN' } else { 'FULL' })
 Model: $Model
+Platform: Windows
 Repository (main checkout, operator's tree): $Repo
 State directory: $state
 State directories of the other jobs: $others

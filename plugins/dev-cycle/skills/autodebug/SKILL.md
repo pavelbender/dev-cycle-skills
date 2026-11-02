@@ -3,10 +3,10 @@ name: autodebug
 description: >-
   Scheduled unattended agent that fixes one item of the project's known-issues file per run
   on its own branch, then writes a report; never merges. Install, dry-run, pause, resume,
-  check or remove the Windows Task Scheduler job for the current repository. Use when asked
+  check or remove the scheduler job (Windows Task Scheduler, cron on Linux and macOS) for the current repository. Use when asked
   to set up or manage automatic known-issue fixing («автофикс known issues», «поставь
   autodebug», "schedule autodebug").
-argument-hint: "install [-Minute N] | dry-run | status | pause | resume | uninstall"
+argument-hint: "install [-Minute N | --minute N] | dry-run | status | pause | resume | uninstall"
 disable-model-invocation: true
 metadata:
   contract: ../task-layout/SKILL.md
@@ -22,15 +22,17 @@ owner reviews the reports and merges the branches. Rules shared with `autobacklo
 ## Operator
 
 Run from the target repository root; `<plugin>` is this plugin's root (two levels above
-this file). Windows only; the job runs Claude Code.
+this file). The job runs Claude Code. Windows uses `agent-job.ps1` (PowerShell 7, Task
+Scheduler); Linux and macOS use `agent-job.sh` (bash, cron) with `--minute N`, `--hour N`,
+`--dry-run` instead of `-Minute N`, `-Hour N`, `-DryRun`.
 
-| Argument | Command |
-| --- | --- |
-| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job autodebug [-Minute N]` |
-| `dry-run` | `... -Action run -Job autodebug -DryRun` (selection only, 10–30 min; run in the background) |
-| `status` | `... -Action status` |
-| `pause` / `resume` | `... -Action pause -Job autodebug` / `-Action resume -Job autodebug` |
-| `uninstall` | `... -Action uninstall -Job autodebug` (state and branches stay) |
+| Argument | Windows | Linux, macOS |
+| --- | --- | --- |
+| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job autodebug [-Minute N]` | `<plugin>/agent-jobs/agent-job.sh install autodebug [--minute N]` |
+| `dry-run` | `... -Action run -Job autodebug -DryRun` | `... run autodebug --dry-run` (selection only, 10–30 min; run in the background) |
+| `status` | `... -Action status` | `... status` |
+| `pause` / `resume` | `... -Action pause -Job autodebug` / `-Action resume -Job autodebug` | `... pause autodebug` / `... resume autodebug` |
+| `uninstall` | `... -Action uninstall -Job autodebug` | `... uninstall autodebug` (state and branches stay) |
 
 Before `install`, check the profile (`## Dev cycle` in `AGENTS.md`): `known_issues` must
 name the file; `format`, `lint`, `test` must exist. Offer `jobs_state` and `job_notes`

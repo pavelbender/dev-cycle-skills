@@ -5,10 +5,10 @@ description: >-
   reports for work explicitly described as deferred, not done, postponed or planned for the
   future, checks that it is still current and not done, and adds it to the project's backlog
   on a rolling branch that autobacklog also reads. Install, dry-run, pause, resume, check or
-  remove the Windows Task Scheduler job for the current repository. Use when asked to set up
+  remove the scheduler job (Windows Task Scheduler, cron on Linux and macOS) for the current repository. Use when asked to set up
   or manage automatic backlog collection («сборщик задач для backlog», «поставь
   collect-backlog», "schedule collect-backlog").
-argument-hint: "install [-Hour N] | dry-run | status | pause | resume | uninstall"
+argument-hint: "install [-Hour N | --hour N] | dry-run | status | pause | resume | uninstall"
 disable-model-invocation: true
 metadata:
   contract: ../task-layout/SKILL.md
@@ -26,15 +26,17 @@ the owner merges it. Rules shared with the other jobs:
 ## Operator
 
 Run from the target repository root; `<plugin>` is this plugin's root (two levels above
-this file). Windows only; the job runs Claude Code.
+this file). The job runs Claude Code. Windows uses `agent-job.ps1` (PowerShell 7, Task
+Scheduler); Linux and macOS use `agent-job.sh` (bash, cron) with `--minute N`, `--hour N`,
+`--dry-run` instead of `-Minute N`, `-Hour N`, `-DryRun`.
 
-| Argument | Command |
-| --- | --- |
-| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job collect-backlog [-Hour N]` |
-| `dry-run` | `... -Action run -Job collect-backlog -DryRun` (candidates only; run in the background) |
-| `status` | `... -Action status` |
-| `pause` / `resume` | `... -Action pause -Job collect-backlog` / `-Action resume -Job collect-backlog` |
-| `uninstall` | `... -Action uninstall -Job collect-backlog` (state and branch stay) |
+| Argument | Windows | Linux, macOS |
+| --- | --- | --- |
+| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job collect-backlog [-Hour N]` | `<plugin>/agent-jobs/agent-job.sh install collect-backlog [--hour N]` |
+| `dry-run` | `... -Action run -Job collect-backlog -DryRun` | `... run collect-backlog --dry-run` (candidates only; run in the background) |
+| `status` | `... -Action status` | `... status` |
+| `pause` / `resume` | `... -Action pause -Job collect-backlog` / `-Action resume -Job collect-backlog` | `... pause collect-backlog` / `... resume collect-backlog` |
+| `uninstall` | `... -Action uninstall -Job collect-backlog` | `... uninstall collect-backlog` (state and branch stay) |
 
 Before `install`, the profile (`## Dev cycle` in `AGENTS.md`) must name `backlog`.
 
@@ -53,8 +55,8 @@ do it later, open owner questions, wishes without an owner, defects (they belong
 - Branch `collect/backlog` unless the notes name another. If it exists and is not merged
   into `wip_branch`, continue it (worktree on the existing branch). If it is merged, delete
   it with `git branch -d` and create it again from `wip_branch`.
-- `<state>\cursor` holds the `wip_branch` commit and the time of the last completed scan.
-  `<state>\seen.md` is a table `| source | note | verdict | item |` of every note already
+- `<state>/cursor` holds the `wip_branch` commit and the time of the last completed scan.
+  `<state>/seen.md` is a table `| source | note | verdict | item |` of every note already
   judged; skip a note whose source and text are unchanged there.
 
 ### Sources

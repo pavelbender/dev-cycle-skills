@@ -70,15 +70,17 @@ exact blocked part.
    plus generated outputs the project requires.
 2. Commit in the worktree with Conventional Commits and the commit attribution your harness
    prescribes. `git -C <wt> status --short` must be empty afterwards.
-3. Remove every worktree you created; branches stay. For each: list reparse points with
-   `Get-ChildItem <wt> -Recurse -Force -Attributes ReparsePoint`; each target must be inside
-   the worktree; delete a link that points outside with `(Get-Item <link>).Delete()`. Then
-   `cmd /c rmdir /s /q <wt>` and `git worktree prune`.
+3. Remove every worktree you created; branches stay. For each, first check that no link
+   leaves the worktree; each target must be inside it. Header `Platform: Windows`: list
+   reparse points with `Get-ChildItem <wt> -Recurse -Force -Attributes ReparsePoint`, delete
+   a link that points outside with `(Get-Item <link>).Delete()`, then `cmd /c rmdir /s /q <wt>`.
+   Otherwise: `find <wt> -type l`, `rm` a link that points outside, then `rm -rf <wt>`.
+   Finish with `git worktree prune`.
 
 ## Budget and failure
 
 - At "Stop and wrap up by", stop implementing. Never commit failing work. Commit finished,
-  passing steps; save an unfinished diff to `<state>\patches\<stamp>-<slug>.patch`; remove
+  passing steps; save an unfinished diff to `<state>/patches/<stamp>-<slug>.patch`; remove
   worktrees as above. Delete a branch only if you created it in this run and it has no
   commits (`git branch -D`); status `abandoned` with the reason.
 - An item that turns out to need the owner: stop the same way, status `needs-owner`.
@@ -91,7 +93,7 @@ section allows in dry-run. No worktree, no branch, no edits outside the state di
 
 ## Report
 
-Markdown at `<state>\reports\<stamp>-<slug>.md` (`<stamp>-none.md` without an item), in the
+Markdown at `<state>/reports/<stamp>-<slug>.md` (`<stamp>-none.md` without an item), in the
 language of the job's source document. Sections (translate the headings once):
 
 - Outcome — one line: status, item, branch, commit.
@@ -106,7 +108,7 @@ language of the job's source document. Sections (translate the headings once):
 
 ## Ledger
 
-Append one row per item to `<state>\ledger.md`:
+Append one row per item to `<state>/ledger.md`:
 
 `| <stamp> | <slug> | <status> | <branch or -> | <commit or -> | reports/<file> |`
 

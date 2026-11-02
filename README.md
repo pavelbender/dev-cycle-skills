@@ -400,8 +400,8 @@ automatic invocation in Claude Code (`disable-model-invocation`); run them expli
 
 ## Unattended jobs
 
-Each job installs a Windows Task Scheduler task per repository that runs a headless Claude
-Code agent (model pinned to `opus`, each run killed after 2 h):
+Each job installs a scheduled task per repository (Windows Task Scheduler, or a crontab line on
+Linux and macOS) that runs a headless Claude Code agent (model pinned to `opus`, each run killed after 2 h):
 
 | Job | Every | Default start | Does |
 | --- | --- | --- | --- |
@@ -421,7 +421,7 @@ with a question only for architecture, business functionality or business-critic
 ```text
 /dev-cycle:autobacklog install      # also: dry-run, status, pause, resume, uninstall
 /dev-cycle:autodebug install
-/dev-cycle:collect-issues install   # -Hour N moves the 6-hour cycle
+/dev-cycle:collect-issues install   # -Hour N (--hour N on Linux, macOS) moves the 6-hour cycle
 /dev-cycle:collect-backlog install
 ```
 
@@ -430,9 +430,12 @@ command as your user without asking, limited only by the job instructions. Insta
 only on a machine and account where that is acceptable.
 
 Add `known_issues`, `backlog` and optionally `jobs_state` and `job_notes` to the project
-profile first. Tasks run the stable copy `~/.claude/agent-jobs/agent-job.ps1`, which reads
-the job text from the installed plugin on every run, so plugin updates need no reinstall.
-Windows and Claude Code only; the jobs need the plugin installation, not `scripts/install.sh`.
+profile first. Tasks run the stable copy `~/.claude/agent-jobs/agent-job.ps1` (Windows, PowerShell 7)
+or `agent-job.sh` (Linux and macOS, bash and cron), which reads the job text from the
+installed plugin on every run, so plugin updates need no reinstall. Claude Code only; the jobs
+need the plugin installation, not `scripts/install.sh`. On macOS cron may need Full Disk Access
+and cannot always read the login keychain: if runs end with `exit 1, report missing` in the
+ledger, read `logs/<stamp>.err.log` and `.jsonl` in the state directory.
 
 ## Language
 

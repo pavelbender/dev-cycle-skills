@@ -4,11 +4,11 @@ description: >-
   Scheduled unattended agent that walks the repository's documents, job reports and code
   markers for notes about remaining problems, checks that each problem still exists, and
   adds the untracked ones to the project's known-issues file on a rolling branch that
-  autodebug also reads. Install, dry-run, pause, resume, check or remove the Windows Task
-  Scheduler job for the current repository. Use when asked to set up or manage automatic
+  autodebug also reads. Install, dry-run, pause, resume, check or remove the scheduler job (Windows Task Scheduler,
+  cron on Linux and macOS) for the current repository. Use when asked to set up or manage automatic
   known-issue collection («сборщик known issues», «поставь collect-issues»,
   "schedule collect-issues").
-argument-hint: "install [-Hour N] | dry-run | status | pause | resume | uninstall"
+argument-hint: "install [-Hour N | --hour N] | dry-run | status | pause | resume | uninstall"
 disable-model-invocation: true
 metadata:
   contract: ../task-layout/SKILL.md
@@ -26,15 +26,17 @@ before the owner merges it. Rules shared with the other jobs:
 ## Operator
 
 Run from the target repository root; `<plugin>` is this plugin's root (two levels above
-this file). Windows only; the job runs Claude Code.
+this file). The job runs Claude Code. Windows uses `agent-job.ps1` (PowerShell 7, Task
+Scheduler); Linux and macOS use `agent-job.sh` (bash, cron) with `--minute N`, `--hour N`,
+`--dry-run` instead of `-Minute N`, `-Hour N`, `-DryRun`.
 
-| Argument | Command |
-| --- | --- |
-| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job collect-issues [-Hour N]` |
-| `dry-run` | `... -Action run -Job collect-issues -DryRun` (candidates only; run in the background) |
-| `status` | `... -Action status` |
-| `pause` / `resume` | `... -Action pause -Job collect-issues` / `-Action resume -Job collect-issues` |
-| `uninstall` | `... -Action uninstall -Job collect-issues` (state and branch stay) |
+| Argument | Windows | Linux, macOS |
+| --- | --- | --- |
+| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job collect-issues [-Hour N]` | `<plugin>/agent-jobs/agent-job.sh install collect-issues [--hour N]` |
+| `dry-run` | `... -Action run -Job collect-issues -DryRun` | `... run collect-issues --dry-run` (candidates only; run in the background) |
+| `status` | `... -Action status` | `... status` |
+| `pause` / `resume` | `... -Action pause -Job collect-issues` / `-Action resume -Job collect-issues` | `... pause collect-issues` / `... resume collect-issues` |
+| `uninstall` | `... -Action uninstall -Job collect-issues` | `... uninstall collect-issues` (state and branch stay) |
 
 Before `install`, the profile (`## Dev cycle` in `AGENTS.md`) must name `known_issues`.
 
@@ -51,8 +53,8 @@ known issue: leave it to `collect-backlog`.
 - Branch `collect/known-issues` unless the notes name another. If it exists and is not
   merged into `wip_branch`, continue it (worktree on the existing branch). If it is merged,
   delete it with `git branch -d` and create it again from `wip_branch`.
-- `<state>\cursor` holds the `wip_branch` commit and the time of the last completed scan.
-  `<state>\seen.md` is a table `| source | note | verdict | item |` of every note already
+- `<state>/cursor` holds the `wip_branch` commit and the time of the last completed scan.
+  `<state>/seen.md` is a table `| source | note | verdict | item |` of every note already
   judged; skip a note whose source and text are unchanged there.
 
 ### Sources
