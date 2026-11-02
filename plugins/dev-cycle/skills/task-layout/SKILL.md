@@ -13,7 +13,8 @@ metadata:
 # Task layout contract
 
 Every other skill of this set (`cycle`, `plan-scenarios`, `plan-feature`, `write-task`,
-`execute-task`, `validate-task`, `run-bundle`, `tidy-folder`) follows this contract. It keeps
+`execute-task`, `validate-task`, `run-bundle`, `tidy-folder`, `autodebug`, `autobacklog`,
+`collect-issues`, `collect-backlog`) follows this contract. It keeps
 scenarios, workflows, task sequences, implementation tasks and evidence of one feature in one
 group instead of a flat numbered list.
 
@@ -41,6 +42,10 @@ Missing key → default below. A missing command with no default → ask, never 
 - task_heading: "# Task:"                 # heading that marks an implementation task file
 - tracker_key: jira_link                  # optional frontmatter key for a tracker link
 - boundaries: <one line>                  # optional: rule every subagent brief must carry
+- known_issues: docs/known-issues.md      # optional: open defects; fed by collect-issues, worked by autodebug
+- backlog: docs/BACKLOG.md                # optional: routing index of bundles; fed by collect-backlog, worked by autobacklog
+- jobs_state: .dev-cycle/jobs/            # optional: ledgers, reports, logs of the unattended jobs
+- job_notes: docs/agent-jobs.md           # optional: project specifics for unattended jobs
 ```
 
 | Key | Default |
@@ -53,6 +58,10 @@ Missing key → default below. A missing command with no default → ask, never 
 | `worktree_root` | `../{repo}.worktrees/`, directory name = branch with `/` → `-` |
 | `task_heading` | `# Task:` |
 | `format`, `lint`, `test` | none: ask once, then suggest adding them to the profile |
+| `known_issues` | none: `autodebug` looks only at recent evidence follow-ups; `collect-issues` cannot run |
+| `backlog` | none: `autobacklog` scans open bundles under `tasks_root`; `collect-backlog` cannot run |
+| `jobs_state` | `.dev-cycle/jobs/`; `install` adds it to `.git/info/exclude` when not ignored |
+| `job_notes` | none: skip lists, live environments, stand ports and branch names for the unattended jobs |
 
 Nearest local `AGENTS.md` files override the root one for files under them.
 

@@ -1,6 +1,6 @@
 {
   "name": "dev-cycle",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Plan a feature into a bundle of task files, execute and validate each task in its own git worktree, merge. Works in Claude Code and Codex.",
   "author": {
     "name": "Pavel Bender"

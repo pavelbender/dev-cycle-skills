@@ -18,10 +18,10 @@ Codex:        $dev-cycle:cycle <intent or bundle path>
 needs you. Calling it again with the bundle path continues from the files, not from chat
 memory.
 
-| Option | Effect |
-| --- | --- |
+| Option            | Effect                                                                                                    |
+| ----------------- | --------------------------------------------------------------------------------------------------------- |
 | `--until <stage>` | stop after `scenarios`, `workflow`, `sequence`, `drafts`, `detail`, `slices`, `validation` or `execution` |
-| `--no-stop` | skip confirmation gates; real questions and failures still stop |
+| `--no-stop`       | skip confirmation gates; real questions and failures still stop                                           |
 
 ## Install
 
@@ -43,7 +43,7 @@ cd dev-cycle-skills
 
 Choose **one scope per client**. A user installation is available in all your projects; a
 project installation enables the plugin only in that project. Both install the complete
-plugin, including its ten skills, reference files and icon.
+plugin, including its fourteen skills, reference files and icon.
 
 ### Claude Code — user
 
@@ -56,7 +56,7 @@ claude plugin details dev-cycle
 ```
 
 The marketplace and enabled state are recorded in the user's Claude settings. Open a new
-session and invoke `/dev-cycle:cycle`. `plugin details` should list ten skills.
+session and invoke `/dev-cycle:cycle`. `plugin details` should list fourteen skills.
 Use `./` for the current directory: Claude Code 2.1.312 rejects a bare `.` as a marketplace source.
 
 ### Claude Code — project
@@ -140,7 +140,7 @@ claude plugin list
 codex plugin marketplace list
 ```
 
-Claude's `plugin details dev-cycle` lists the ten skills. In a Codex session, the skill
+Claude's `plugin details dev-cycle` lists the fourteen skills. In a Codex session, the skill
 picker lists them as `dev-cycle:<name>`. `codex plugin list` is useful for user installations;
 on Codex CLI 0.165.0 it does not report the project-only installation reliably, so verify
 that scope from a session in the target project.
@@ -175,9 +175,9 @@ claude plugin marketplace update dev-cycle-skills
 
 Then run the command for your installation scope:
 
-| Scope | Command | Run from |
-| --- | --- | --- |
-| User | `claude plugin update dev-cycle@dev-cycle-skills --scope user` | Any directory |
+| Scope   | Command                                                           | Run from            |
+| ------- | ----------------------------------------------------------------- | ------------------- |
+| User    | `claude plugin update dev-cycle@dev-cycle-skills --scope user`    | Any directory       |
 | Project | `claude plugin update dev-cycle@dev-cycle-skills --scope project` | Target project root |
 
 Open a new Claude session, then check `claude plugin details dev-cycle`. A marketplace
@@ -233,9 +233,9 @@ This cache is shared by projects, so eviction affects other sessions using the s
 
 Choose the scope you installed:
 
-| Scope | Command | Run from |
-| --- | --- | --- |
-| User | `claude plugin uninstall dev-cycle@dev-cycle-skills --scope user` | Any directory |
+| Scope   | Command                                                              | Run from            |
+| ------- | -------------------------------------------------------------------- | ------------------- |
+| User    | `claude plugin uninstall dev-cycle@dev-cycle-skills --scope user`    | Any directory       |
 | Project | `claude plugin uninstall dev-cycle@dev-cycle-skills --scope project` | Target project root |
 
 Optionally unregister the marketplace from the **same scope** if you no longer use it:
@@ -282,7 +282,7 @@ enabled = false
 
 The lifecycle commands above apply to plugin installations. For skills linked by the old
 `scripts/install.sh`, update by pulling the source clone and starting a new session; uninstall
-by removing only those ten symlinks from the chosen `.agents/skills` or `.claude/skills`
+by removing only those fourteen symlinks from the chosen `.agents/skills` or `.claude/skills`
 directory. Keep the source clone until no remaining installation refers to it.
 
 References: [Claude plugin management](https://code.claude.com/docs/en/discover-plugins),
@@ -341,12 +341,12 @@ P03 after T05–T06: the whole scenario in a browser
 **Stages 4–7 — task files, `tasks/T01-…md` … `T06-…md`.** Four passes, each recorded as
 `pass:` in frontmatter:
 
-| Pass | Adds |
-| --- | --- |
-| `draft` | frontmatter, goal, scope, stub criteria |
-| `detail` | check against code: what exists, contract, changes by layer, plan |
-| `slices` | `S01…` items a subagent can do with small context and its own check |
-| `validation` | each criterion becomes one case with an exact command |
+| Pass         | Adds                                                                |
+| ------------ | ------------------------------------------------------------------- |
+| `draft`      | frontmatter, goal, scope, stub criteria                             |
+| `detail`     | check against code: what exists, contract, changes by layer, plan   |
+| `slices`     | `S01…` items a subagent can do with small context and its own check |
+| `validation` | each criterion becomes one case with an exact command               |
 
 No confirmations here; the agent stops only if the code contradicts the plan.
 
@@ -377,21 +377,62 @@ docs/tasks/<domain>/project-file-upload/
 
 ## Skills
 
-| Skill | One step |
-| --- | --- |
-| `cycle` | router: detect the stage, run the next skill, stop at gates |
-| `plan-scenarios` | GUI/TUI scenarios → `00-interaction-scenarios.md` |
-| `plan-feature` | `01-workflow.md` and `02-task-sequence.md` (`workflow` / `sequence` / `all`) |
-| `write-task` | task files; passes `draft`, `detail`, `slices`, `validation` |
-| `execute-task` | implement one task file |
-| `validate-task` | validate one finished task with proof per criterion |
-| `run-bundle` | worktree per task, execute + validate, merge |
-| `tidy-folder` | tidy a docs folder, move closed bundles, fix links |
-| `task-layout` | contract: layout, IDs, frontmatter, language, project profile |
-| `coding-rules` | contract: code structure rules `cs-001`…`cs-028` |
+| Skill            | One step                                                                     |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `cycle`          | router: detect the stage, run the next skill, stop at gates                  |
+| `plan-scenarios` | GUI/TUI scenarios → `00-interaction-scenarios.md`                            |
+| `plan-feature`   | `01-workflow.md` and `02-task-sequence.md` (`workflow` / `sequence` / `all`) |
+| `write-task`     | task files; passes `draft`, `detail`, `slices`, `validation`                 |
+| `execute-task`   | implement one task file                                                      |
+| `validate-task`  | validate one finished task with proof per criterion                          |
+| `run-bundle`     | worktree per task, execute + validate, merge                                 |
+| `tidy-folder`    | tidy a docs folder, move closed bundles, fix links                           |
+| `autodebug`      | scheduled unattended agent: fix one known issue per run on its own branch    |
+| `autobacklog`    | scheduled unattended agent: advance one current backlog item per run         |
+| `collect-issues` | scheduled unattended agent: collect untracked problems into known issues     |
+| `collect-backlog`| scheduled unattended agent: collect deferred and undone work into the backlog |
+| `task-layout`    | contract: layout, IDs, frontmatter, language, project profile                |
+| `coding-rules`   | contract: code structure rules `cs-001`…`cs-028`                             |
 
-`write-task`, `run-bundle` and `tidy-folder` are hidden from automatic invocation in Claude
-Code (`disable-model-invocation`); run them explicitly or let `cycle` run them.
+`write-task`, `run-bundle`, `tidy-folder` and the four unattended jobs are hidden from
+automatic invocation in Claude Code (`disable-model-invocation`); run them explicitly or let
+`cycle` run them.
+
+## Unattended jobs
+
+Each job installs a Windows Task Scheduler task per repository that runs a headless Claude
+Code agent (model pinned to `opus`, each run killed after 2 h):
+
+| Job | Every | Default start | Does |
+| --- | --- | --- | --- |
+| `autodebug` | 30 min | spread, e.g. :07 | fixes one item of `known_issues` |
+| `autobacklog` | 30 min | 15 min after `autodebug` | advances one current `backlog` item, new features through `cycle` |
+| `collect-issues` | 6 h | 00:00 | adds untracked problems from docs, reports and code markers to `known_issues` |
+| `collect-backlog` | 6 h | 03:00 | adds deferred and undone work from docs and bundles to `backlog` |
+
+The two workers share a cap of two agents per machine; collectors are not capped. Every run
+works in its own worktree and branch (collectors keep one rolling branch each,
+`collect/known-issues` and `collect/backlog`, which the workers also read), writes a report
+and a ledger row under `jobs_state`, and never pushes or merges: you review the reports and
+merge the branches. Agents decide technical and small product questions themselves and stop
+with a question only for architecture, business functionality or business-critical areas
+(production, release, publish, secrets).
+
+```text
+/dev-cycle:autobacklog install      # also: dry-run, status, pause, resume, uninstall
+/dev-cycle:autodebug install
+/dev-cycle:collect-issues install   # -Hour N moves the 6-hour cycle
+/dev-cycle:collect-backlog install
+```
+
+The agents run with `--permission-mode bypassPermissions`: unattended, they execute any
+command as your user without asking, limited only by the job instructions. Install them
+only on a machine and account where that is acceptable.
+
+Add `known_issues`, `backlog` and optionally `jobs_state` and `job_notes` to the project
+profile first. Tasks run the stable copy `~/.claude/agent-jobs/agent-job.ps1`, which reads
+the job text from the installed plugin on every run, so plugin updates need no reinstall.
+Windows and Claude Code only; the jobs need the plugin installation, not `scripts/install.sh`.
 
 ## Language
 
@@ -409,6 +450,7 @@ plugins/dev-cycle/.claude-plugin/       Claude plugin manifest
 plugins/dev-cycle/.codex-plugin/        Codex plugin manifest
 plugins/dev-cycle/assets/icon.png       shared plugin icon
 plugins/dev-cycle/skills/<name>/SKILL.md
+plugins/dev-cycle/agent-jobs/           runner, installer and shared rules of the unattended jobs
 scripts/install.sh                      symlink skills for Codex or Claude without the plugin
 examples/AGENTS.dev-cycle.md            project profile to paste into AGENTS.md
 examples/codex-project.toml             Codex project installation settings

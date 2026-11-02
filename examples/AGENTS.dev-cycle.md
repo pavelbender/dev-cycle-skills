@@ -16,3 +16,7 @@
 - worktree_setup: uv sync --frozen
 - task_heading: "# Task:"
 - boundaries: Services never import each other; shared contracts live in packages/contracts.
+- known_issues: docs/known-issues.md
+- backlog: docs/BACKLOG.md
+- jobs_state: .dev-cycle/jobs/
+- job_notes: docs/agent-jobs.md
