@@ -128,6 +128,7 @@ command and output. Classify: implementation bug, stale test, stale task, enviro
    (`tidy-folder`); a partially closed bundle stays.
 5. A closed `PNN` → `evidence/PNN-<slug>.md`: date, branch, `git rev-parse HEAD`, commands,
    observed result.
+6. Commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene).
 
 ## Report
 
@@ -136,13 +137,15 @@ command and output. Classify: implementation bug, stale test, stale task, enviro
 3. Verification commands and results, verbatim on failure.
 4. Benign drift reflected in the task.
 5. Residual risks and what was not checked.
+6. Branch, commits, worktree path; the branch to merge unless the caller merges it.
 
 ## Delegation
 
 A subagent pays off when the subtask is independent and would otherwise flood the context
 (search, logs, test runs), or can run in parallel. Do not delegate what needs most of your
 context or frequent back-and-forth. Brief: goal, exact files, forbidden actions, done
-criterion, return format, budget, and the profile's `boundaries` line if set.
+criterion, return format, budget, and the profile's `boundaries` line if set. Role, model and
+effort per [roles and models](../task-layout/references/roles-and-models.md) (usually researcher, light tier).
 
 ## Anti-patterns
 

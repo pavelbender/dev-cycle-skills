@@ -59,27 +59,47 @@ pairwise disjoint; shared files (route tables, layout shells, registries, the mi
 directory, `02-task-sequence.md` rows) count as overlap and force sequential order.
 
 Announce the batch, branches, worktrees and stands. Wait for confirmation unless the user
-asked for an uninterrupted run.
+asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
 
 ## Phase 3. Per task
 
 1. Create the worktree and branch; run setup.
-2. Brief the worker (a subagent in Claude Code or Codex; without subagents run it yourself in
-   that worktree, one task at a time):
+2. Brief two workers in turn, each a fresh subagent in that worktree (without subagents run
+   both steps yourself, one task at a time). Role, model and effort per
+   [roles and models](../task-layout/references/roles-and-models.md); read its model notes first.
 
    ```text
+   ROLE    developer, <model>, <effort>
    WORKDIR <worktree path>
    READ    <skills dir>/execute-task/SKILL.md
    DO      <task file path>
-   EVAL    <skills dir>/validate-task/SKILL.md
-   COMMIT  one logical change; do not push; report task status, files, commands with output, residual risks
+   COMMIT  one logical change; do not push; return questions, do not ask; report task status, files, commands with output, residual risks
    ```
 
-   Add the profile's `boundaries` line and the owner decisions relevant to the task.
+   After the developer returns, the QA developer validates independently:
+
+   ```text
+   ROLE    QA developer, <model>, <effort>
+   WORKDIR <worktree path>
+   READ    <skills dir>/validate-task/SKILL.md
+   DO      <task file path after rename>
+   COMMIT  fixes, status and evidence; do not push; return questions, do not ask; report the verdict line, criteria matrix, commands with output
+   ```
+
+   To both briefs add the profile's `boundaries` line and the owner decisions relevant to the
+   task. On `AUTOPILOT` add:
+
+   ```text
+   MODE    autopilot: never ask or wait; where a skill says ask or confirm, take the recommended
+           option, record it in the task file as `autopilot: <choice> — <reason>`, continue;
+           "code moved ahead" → return a replan signal; finish validated (_VAL), not review
+   ```
+
 3. On return check yourself: task file renamed and `status` matches the suffix; the verdict is
    one of the two `Task validated` lines; `git status --short` is clean; profile `format` and
    `lint` are clean; the tests the task names pass when you rerun them. A failure goes back to
-   the worker with the exact output; a second failure stops the run.
+   the worker with the exact output; a second failure stops the run. Add a model notes row
+   per worker.
 4. Replan signal (`Task needs replanning`, major drift) → stop that task, keep the worktree,
    report the worker's file-and-line list. No merge.
 
@@ -95,14 +115,15 @@ worktree, stop its stand. Dependants become ready after the merge, not after the
 All tasks `done`/`validated` and every `PNN` has an `evidence/` report → `tidy-folder` on the
 bundle (to `_completed/`), update the domain README, then merge the bundle branch into
 `wip_branch` with `--no-ff`, rerun checks. This last merge is a gate: ask unless the user
-asked for an uninterrupted run. Pushing follows the project's rules. A partially closed
-bundle stays in place and unmerged.
+asked for an uninterrupted run. Pushing follows the project's rules; never on `AUTOPILOT`.
+A partially closed bundle stays in place and unmerged.
 
 ## Stop conditions
 
 A blocking owner question; validation failing twice; a replan signal; a code conflict at
 merge; a worker editing outside its task's work areas. Each stop names the task, the evidence
-and the decision needed.
+and the decision needed. On `AUTOPILOT` a replan signal and a blocking question follow
+[`cycle`](../cycle/SKILL.md#autopilot) instead of stopping.
 
 ## Report
 

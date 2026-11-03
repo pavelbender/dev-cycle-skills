@@ -138,7 +138,8 @@ Exactly one verdict:
 Then: criteria matrix (text, status, proof, drift class); drift list split into benign and
 bugs with the action (kept / fixed / needs replan); failure paths checked; commands run and
 not run with reasons; residual risks (stand not raised, criterion proved by code without a
-dedicated test, …).
+dedicated test, …). Fixes, status and evidence are committed per [`task-layout`](../task-layout/SKILL.md#git-hygiene); name the
+branch and commits.
 
 ## Checklist
 

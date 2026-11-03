@@ -46,6 +46,7 @@ Missing key → default below. A missing command with no default → ask, never 
 - backlog: docs/BACKLOG.md                # optional: routing index of bundles; fed by collect-backlog, worked by autobacklog
 - jobs_state: .dev-cycle/jobs/            # optional: ledgers, reports, logs of the unattended jobs
 - job_notes: docs/agent-jobs.md           # optional: project specifics for unattended jobs
+- model_notes: .dev-cycle/model-notes.md  # optional: observed model results, coordinator-written
 ```
 
 | Key | Default |
@@ -62,6 +63,7 @@ Missing key → default below. A missing command with no default → ask, never 
 | `backlog` | none: `autobacklog` scans open bundles under `tasks_root`; `collect-backlog` cannot run |
 | `jobs_state` | `.dev-cycle/jobs/`; `install` adds it to `.git/info/exclude` when not ignored |
 | `job_notes` | none: skip lists, live environments, stand ports and branch names for the unattended jobs |
+| `model_notes` | `.dev-cycle/model-notes.md`, never committed; see [roles and models](references/roles-and-models.md) |
 
 Nearest local `AGENTS.md` files override the root one for files under them.
 
@@ -195,6 +197,24 @@ not "previous task", unless the graph has exactly one.
   evidence paths.
 - Every task links to its sequence and its direct dependency tasks.
 - Every evidence file names its `PNN` and the `TNN` it proves.
+
+## Git hygiene
+
+Every skill that writes files follows this; the user never has to ask for a commit.
+
+- Commit your work and progress in logical commits, in the project's commit convention.
+  Never end a turn, stop at a gate or wait for an answer with your changes uncommitted.
+  Unfinished work is committed too; the message says what is left. Worktrees included.
+- Stage only the files you changed (`git add <paths>`). The tree may hold the user's or
+  another agent's uncommitted edits: never `git add -A`, stash, reset or commit them.
+- Merge only within the branch you work in. Merging into `wip_branch`, the default branch or
+  any branch you did not work in happens only when the task, the running skill
+  (`run-bundle`, `cycle`) or the automation that started you says so. Otherwise name the
+  branch to merge and the command: `git merge --no-ff <branch>`.
+- Push only as the project's rules say.
+- Every report names the branch, the new commits and the worktree path, if any.
+
+The unattended jobs follow `agent-jobs/common.md` where it differs.
 
 ## Existing flat document families
 
