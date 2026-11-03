@@ -59,7 +59,7 @@ pairwise disjoint; shared files (route tables, layout shells, registries, the mi
 directory, `02-task-sequence.md` rows) count as overlap and force sequential order.
 
 Announce the batch, branches, worktrees and stands. Wait for confirmation unless the user
-asked for an uninterrupted run.
+asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
 
 ## Phase 3. Per task
 
@@ -75,7 +75,15 @@ asked for an uninterrupted run.
    COMMIT  one logical change; do not push; report task status, files, commands with output, residual risks
    ```
 
-   Add the profile's `boundaries` line and the owner decisions relevant to the task.
+   Add the profile's `boundaries` line and the owner decisions relevant to the task. On
+   `AUTOPILOT` add:
+
+   ```text
+   MODE    autopilot: never ask or wait; where a skill says ask or confirm, take the recommended
+           option, record it in the task file as `autopilot: <choice> — <reason>`, continue;
+           "code moved ahead" → return a replan signal; finish validated (_VAL), not review
+   ```
+
 3. On return check yourself: task file renamed and `status` matches the suffix; the verdict is
    one of the two `Task validated` lines; `git status --short` is clean; profile `format` and
    `lint` are clean; the tests the task names pass when you rerun them. A failure goes back to
@@ -95,14 +103,15 @@ worktree, stop its stand. Dependants become ready after the merge, not after the
 All tasks `done`/`validated` and every `PNN` has an `evidence/` report → `tidy-folder` on the
 bundle (to `_completed/`), update the domain README, then merge the bundle branch into
 `wip_branch` with `--no-ff`, rerun checks. This last merge is a gate: ask unless the user
-asked for an uninterrupted run. Pushing follows the project's rules. A partially closed
-bundle stays in place and unmerged.
+asked for an uninterrupted run. Pushing follows the project's rules; never on `AUTOPILOT`.
+A partially closed bundle stays in place and unmerged.
 
 ## Stop conditions
 
 A blocking owner question; validation failing twice; a replan signal; a code conflict at
 merge; a worker editing outside its task's work areas. Each stop names the task, the evidence
-and the decision needed.
+and the decision needed. On `AUTOPILOT` a replan signal and a blocking question follow
+[`cycle`](../cycle/SKILL.md#autopilot) instead of stopping.
 
 ## Report
 

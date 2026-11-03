@@ -5,10 +5,11 @@ description: >-
   the bundle's current stage from its files and frontmatter, run the next skill
   (plan-scenarios → plan-feature → write-task passes draft/detail/slices/validation →
   run-bundle → tidy-folder) and stop only at gates that need the user. Accepts a free-text
-  intent or a bundle path. Use when asked to drive, continue or finish a feature end to end
-  ("drive the cycle", "next step for the bundle", «доведи фичу до задач», «продолжи цикл»,
-  «пройди весь цикл»).
-argument-hint: "<intent | bundle-dir> [--until <stage>] [--no-stop]"
+  intent or a bundle path; --auto runs it on autopilot with no questions. Use when asked to
+  drive, continue or finish a feature end to end ("drive the cycle", "next step for the
+  bundle", "autopilot", «доведи фичу до задач», «продолжи цикл», «пройди весь цикл»,
+  «на автопилоте», «без вопросов»).
+argument-hint: "<intent | bundle-dir> [--until <stage>] [--no-stop] [--auto]"
 metadata:
   contract: ../task-layout/SKILL.md
 ---
@@ -18,7 +19,9 @@ metadata:
 Input: a bundle directory, or a free-text intent when no bundle exists — then propose
 `<tasks_root>/<domain>/<feature-slug>` from the project profile and the domain layout, and
 confirm it (gate) before stage 1. Options: `--until <stage>` stops after that stage;
-`--no-stop` skips confirmation gates (owner questions still stop). Claude Code passes
+`--no-stop` skips confirmation gates (owner questions still stop); `--auto` (or "autopilot",
+«автопилот», «без вопросов» in the request) asks nothing at all, see [Autopilot](#autopilot).
+Claude Code passes
 `$ARGUMENTS`; Codex the request text.
 
 | # | Stage | Done when | Next skill |
@@ -53,7 +56,7 @@ Never paraphrase a skill from memory.
 
 ## Gates
 
-Always stop, even with `--no-stop`:
+Always stop, even with `--no-stop` (with `--auto` none of these asks, see Autopilot):
 
 - bundle path for a new intent;
 - topic choice (`write-task` phase 0 without a `TNN`);
@@ -64,6 +67,36 @@ Stop unless `--no-stop`:
 
 - before stage 8: batch plan, branches, worktrees;
 - before merging the bundle branch into the WIP branch.
+
+## Autopilot
+
+`--auto`: nobody answers. Never ask, never wait for confirmation: decide, record, continue.
+Implies `--no-stop`. The table below overrides every ask in the skills you run from here.
+Run `run-bundle` as `AUTOPILOT` (an uninterrupted run); it passes the rule to its workers.
+
+| Where a gate or skill would ask | Autopilot decision |
+| --- | --- |
+| bundle path for a new intent | the proposed path |
+| topic choice | the recommended topic |
+| ambiguous goal, several candidate files | the reading most consistent with the bundle's accepted documents |
+| blocking owner question, open decision | the option the document recommends; else the smallest reversible one that keeps existing contracts and data |
+| batch plan, merge into the WIP branch | proceed |
+| task left in `review` | the worker's `validate-task` verdict is the acceptance: `validated`, `_VAL` |
+| replan signal, "code moved ahead" | `write-task TNN` passes detail, slices, validation from the worker's file-and-line list, then rerun the task; a second signal on the same task ends the run |
+
+Record each decision where its question was: under the document's decisions as
+`autopilot: <choice> — <reason>`, the question removed from open questions.
+
+Never on autopilot, whatever the documents say: push, deploy, release, package publishing,
+production, secrets, credentials, deleting customer data, editing an applied migration. Skip
+that step, list it in the report, continue with the rest.
+
+The run ends (with the report, still no question) only when it cannot move forward:
+validation or a merge conflict failing twice, a second replan signal on a task, a blocker
+outside the repository (missing credentials, unreachable service).
+
+Unlike the scheduled jobs (`agent-jobs/common.md`), autopilot does not stop with
+`needs-owner`: the user who starts it chose decisions after the fact over questions.
 
 ## Rules
 
@@ -76,4 +109,5 @@ Stop unless `--no-stop`:
 ## Report
 
 At each stop: current stage, files produced in this run, the gate reached and the input
-needed, and how to continue (`cycle <bundle>`).
+needed, and how to continue (`cycle <bundle>`). Autopilot adds "Autopilot decisions" (file,
+question, choice, one line each) and the skipped never-on-autopilot steps.

@@ -22,6 +22,7 @@ memory.
 | ----------------- | --------------------------------------------------------------------------------------------------------- |
 | `--until <stage>` | stop after `scenarios`, `workflow`, `sequence`, `drafts`, `detail`, `slices`, `validation` or `execution` |
 | `--no-stop`       | skip confirmation gates; real questions and failures still stop                                           |
+| `--auto`          | autopilot: asks nothing, decides open questions itself and lists the decisions in the report; no push      |
 
 ## Install
 
