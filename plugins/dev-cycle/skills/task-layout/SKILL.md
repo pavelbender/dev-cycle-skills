@@ -196,6 +196,24 @@ not "previous task", unless the graph has exactly one.
 - Every task links to its sequence and its direct dependency tasks.
 - Every evidence file names its `PNN` and the `TNN` it proves.
 
+## Git hygiene
+
+Every skill that writes files follows this; the user never has to ask for a commit.
+
+- Commit your work and progress in logical commits, in the project's commit convention.
+  Never end a turn, stop at a gate or wait for an answer with your changes uncommitted.
+  Unfinished work is committed too; the message says what is left. Worktrees included.
+- Stage only the files you changed (`git add <paths>`). The tree may hold the user's or
+  another agent's uncommitted edits: never `git add -A`, stash, reset or commit them.
+- Merge only within the branch you work in. Merging into `wip_branch`, the default branch or
+  any branch you did not work in happens only when the task, the running skill
+  (`run-bundle`, `cycle`) or the automation that started you says so. Otherwise name the
+  branch to merge and the command: `git merge --no-ff <branch>`.
+- Push only as the project's rules say.
+- Every report names the branch, the new commits and the worktree path, if any.
+
+The unattended jobs follow `agent-jobs/common.md` where it differs.
+
 ## Existing flat document families
 
 Do not move or renumber published files because this contract appeared. New work in a

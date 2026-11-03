@@ -121,4 +121,5 @@ feature follows the bundle layout; `git diff --check` clean.
 
 Which document was created or updated; which `Must` scenarios were captured; which states,
 permissions, risks and questions were recorded; whether the document is ready for
-`plan-feature`; which checks ran. Never claim implementation — this is a specification.
+`plan-feature`; which checks ran; branch and commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene). Never claim
+implementation — this is a specification.

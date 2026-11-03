@@ -103,6 +103,8 @@ Unlike the scheduled jobs (`agent-jobs/common.md`), autopilot does not stop with
 - One stage per skill pass; never skip a stage because the next "would cover it".
 - Never two write-heavy skills at once in one tree; parallelism only inside `run-bundle`.
 - Layout, IDs, frontmatter and profile come from [`task-layout`](../task-layout/SKILL.md).
+- Every stage ends committed per [`task-layout`](../task-layout/SKILL.md#git-hygiene),
+  before the next stage and before any gate or question.
 - Language: summaries and decisions in the user's language, agent-facing detail in compact
   English.
 

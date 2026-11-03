@@ -99,4 +99,5 @@ Moves via `git mv` to keep history.
 ## Summary
 
 Short: folder, strategy, what is canonical now, what moved, which links changed, which
-follow-ups remain outside the cleanup. Not a changelog of every small edit.
+follow-ups remain outside the cleanup; branch and commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene). Not a
+changelog of every small edit.

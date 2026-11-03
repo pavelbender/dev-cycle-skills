@@ -164,5 +164,5 @@ nothing unresolved presented as fact.
 ## Report
 
 Which workflow and task sequence were created or updated; the first batch; significant
-decisions, risks, questions; whether task drafts were created; which checks ran. Never claim
-implementation.
+decisions, risks, questions; whether task drafts were created; which checks ran; branch and
+commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene). Never claim implementation.

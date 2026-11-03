@@ -130,7 +130,7 @@ File path; 3–5 line summary (name, bundle, in scope, deferred); the hand-over 
 Implement the task in <path>. Meet every acceptance criterion and test.
 ```
 
-Never paste the full task into the chat.
+Never paste the full task into the chat. Commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene) and name the branch.
 
 ## Anti-patterns
 
