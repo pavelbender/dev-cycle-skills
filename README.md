@@ -297,6 +297,14 @@ paths: they read this `## Dev cycle` section and fall back to the defaults in
 [`task-layout`](plugins/dev-cycle/skills/task-layout/SKILL.md#project-profile). A missing
 command without a default makes the agent ask once.
 
+`cycle` and `run-bundle` coordinate: each stage and each task goes to a subagent with a role
+(system architect, solution architect, uiux expert, developer, QA developer, researcher,
+release manager) and a model of the host's own family picked by tier and effort. Claude Code
+uses Fable, Opus, Sonnet and Haiku; Codex uses Astra, Sol, Terra and Luna. The coordinator logs
+observed results in `.dev-cycle/model-notes.md` (40 rows max, never committed) and reads it
+before delegating, so measured results gradually replace vendor defaults. See
+[roles and models](plugins/dev-cycle/skills/task-layout/references/roles-and-models.md).
+
 ## Example
 
 Intent:

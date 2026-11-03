@@ -20,3 +20,4 @@
 - backlog: docs/BACKLOG.md
 - jobs_state: .dev-cycle/jobs/
 - job_notes: docs/agent-jobs.md
+- model_notes: .dev-cycle/model-notes.md

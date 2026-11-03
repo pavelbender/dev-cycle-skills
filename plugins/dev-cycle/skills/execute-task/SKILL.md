@@ -144,7 +144,8 @@ command and output. Classify: implementation bug, stale test, stale task, enviro
 A subagent pays off when the subtask is independent and would otherwise flood the context
 (search, logs, test runs), or can run in parallel. Do not delegate what needs most of your
 context or frequent back-and-forth. Brief: goal, exact files, forbidden actions, done
-criterion, return format, budget, and the profile's `boundaries` line if set.
+criterion, return format, budget, and the profile's `boundaries` line if set. Role, model and
+effort per [roles and models](../task-layout/references/roles-and-models.md) (usually researcher, light tier).
 
 ## Anti-patterns
 

@@ -21,20 +21,19 @@ Input: a bundle directory, or a free-text intent when no bundle exists — then 
 confirm it (gate) before stage 1. Options: `--until <stage>` stops after that stage;
 `--no-stop` skips confirmation gates (owner questions still stop); `--auto` (or "autopilot",
 «автопилот», «без вопросов» in the request) asks nothing at all, see [Autopilot](#autopilot).
-Claude Code passes
-`$ARGUMENTS`; Codex the request text.
+Claude Code passes `$ARGUMENTS`; Codex the request text.
 
-| # | Stage | Done when | Next skill |
-| --- | --- | --- | --- |
-| 1 | scenarios | `00-interaction-scenarios.md` exists; skipped when the intent names no screen, page or CLI flow | `plan-scenarios` |
-| 2 | workflow | `01-workflow.md` exists | `plan-feature <intent> workflow` |
-| 3 | sequence | `02-task-sequence.md` has its main decomposition | `plan-feature <intent> sequence` |
-| 4 | drafts | every `TNN` of the sequence has a `tasks/TNN-*.md` with the task heading | `write-task all draft` |
-| 5 | detail | each task has `pass: detail` or later | `write-task TNN detail`, per task |
-| 6 | slices | each task has `pass: slices` or later | `write-task TNN slices`, per task |
-| 7 | validation | each task has `pass: validation` | `write-task TNN validation`, per task |
-| 8 | execution | every task `done`/`validated`, evidence for every `PNN` | `run-bundle` |
-| 9 | close | bundle in `_completed/`, bundle branch merged into the WIP branch | `tidy-folder` (via `run-bundle` phase 5) |
+| # | Stage | Done when | Next skill | Role |
+| --- | --- | --- | --- | --- |
+| 1 | scenarios | `00-interaction-scenarios.md` exists; skipped when the intent names no screen, page or CLI flow | `plan-scenarios` | uiux expert |
+| 2 | workflow | `01-workflow.md` exists | `plan-feature <intent> workflow` | system architect |
+| 3 | sequence | `02-task-sequence.md` has its main decomposition | `plan-feature <intent> sequence` | system architect |
+| 4 | drafts | every `TNN` of the sequence has a `tasks/TNN-*.md` with the task heading | `write-task all draft` | solution architect |
+| 5 | detail | each task has `pass: detail` or later | `write-task TNN detail`, per task | solution architect |
+| 6 | slices | each task has `pass: slices` or later | `write-task TNN slices`, per task | solution architect |
+| 7 | validation | each task has `pass: validation` | `write-task TNN validation`, per task | QA developer |
+| 8 | execution | every task `done`/`validated`, evidence for every `PNN` | `run-bundle` | you coordinate |
+| 9 | close | bundle in `_completed/`, bundle branch merged into the WIP branch | `tidy-folder` (via `run-bundle` phase 5) | release manager |
 
 Without `pass:` infer it from sections present: current base → detail; subagent-ready items
 → slices; tests and result validity → validation. Without frontmatter: `status` from the
@@ -42,9 +41,12 @@ suffix, `blocked_by` from the sequence.
 
 ## How to run a skill from here
 
-Read the sibling `../<name>/SKILL.md` and follow it with the arguments in the table. This
-works in every host; Claude Code may also invoke skills that allow model invocation directly.
-Never paraphrase a skill from memory.
+You are the coordinator ([roles and models](../task-layout/references/roles-and-models.md)): read the model
+notes, then run each stage in a subagent with the table's role and the model and effort the
+reference picks. Brief: `READ ../<name>/SKILL.md`, the arguments from the table, the role,
+`AUTOPILOT` when on, "return questions, do not ask", "commit your files". Check the stage's
+"done when" yourself, then add the notes row. Without subagents read the skill and follow it
+yourself. Never paraphrase a skill from memory.
 
 ## Loop
 
@@ -111,5 +113,6 @@ Unlike the scheduled jobs (`agent-jobs/common.md`), autopilot does not stop with
 ## Report
 
 At each stop: current stage, files produced in this run, the gate reached and the input
-needed, and how to continue (`cycle <bundle>`). Autopilot adds "Autopilot decisions" (file,
+needed, and how to continue (`cycle <bundle>`). Add role, model and effort per stage.
+Autopilot adds "Autopilot decisions" (file,
 question, choice, one line each) and the skipped never-on-autopilot steps.
