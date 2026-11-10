@@ -46,6 +46,7 @@ Missing key → default below. A missing command with no default → ask, never 
 - backlog: docs/BACKLOG.md                # optional: routing index of bundles; fed by collect-backlog, worked by autobacklog
 - jobs_state: .dev-cycle/jobs/            # optional: ledgers, reports, logs of the unattended jobs
 - job_notes: docs/agent-jobs.md           # optional: project specifics for unattended jobs
+- probe_notes: docs/probe-notes.md         # optional: stand, surfaces, roles and limits for probe-paths
 - model_notes: .dev-cycle/model-notes.md  # optional: observed model results, coordinator-written
 ```
 
@@ -63,6 +64,7 @@ Missing key → default below. A missing command with no default → ask, never 
 | `backlog` | none: `autobacklog` scans open bundles under `tasks_root`; `collect-backlog` cannot run |
 | `jobs_state` | `.dev-cycle/jobs/`; `install` adds it to `.git/info/exclude` when not ignored |
 | `job_notes` | none: skip lists, live environments, stand ports and branch names for the unattended jobs |
+| `probe_notes` | none: `probe-paths` drafts the notes in its state directory on the first iteration |
 | `model_notes` | `.dev-cycle/model-notes.md`, never committed; see [roles and models](references/roles-and-models.md) |
 
 Nearest local `AGENTS.md` files override the root one for files under them.

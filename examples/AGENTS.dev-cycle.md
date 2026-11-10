@@ -20,4 +20,5 @@
 - backlog: docs/BACKLOG.md
 - jobs_state: .dev-cycle/jobs/
 - job_notes: docs/agent-jobs.md
+- probe_notes: docs/probe-notes.md
 - model_notes: .dev-cycle/model-notes.md
