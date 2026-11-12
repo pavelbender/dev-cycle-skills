@@ -1,473 +1,433 @@
-# dev-cycle skills
+<p align="center">
+  <img src="plugins/dev-cycle/assets/icon.png" alt="Dev Cycle" width="128">
+</p>
 
-Agent skills that take a feature from an intent to merged code through documents an agent can
-pick up at any point: scenarios → workflow → task sequence → task files → execution and
-validation in per-task git worktrees → merge. Format: [Agent Skills](https://agentskills.io/specification),
-so the same files work in Claude Code and in Codex.
+<h1 align="center">Dev Cycle</h1>
 
-> Status: early, private. Extracted from a working monorepo; expect rough edges.
+<p align="center">
+  <strong>From an intent to merged code, through documents an agent can pick up at any point.</strong><br>
+  A development cycle for coding agents: plan, write task files, implement and validate in
+  git worktrees, merge.
+</p>
 
-## What you type
+<p align="center">
+  <a href="CHANGELOG.md"><img alt="Version 0.4.0" src="https://img.shields.io/badge/version-0.4.0-2C5F8A"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3E8E41"></a>
+  <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-6B3FA0">
+  <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-177281">
+  <a href="https://agentskills.io/specification"><img alt="Agent Skills format" src="https://img.shields.io/badge/format-Agent%20Skills-6E6E76"></a>
+</p>
+
+<p align="center">
+  Created by <a href="https://pavelbender.com">Pavel Bender</a> ·
+  <a href="https://github.com/pavelbender">@pavelbender</a>
+</p>
+
+---
+
+## What it is
+
+Dev Cycle is a set of agent skills that carries a feature through a fixed sequence of stages.
+Each stage writes a document into the repository, and the next stage reads it. The state of
+the work lives in those files, not in a chat: stop at any point, open a new session a week
+later, name the bundle, and the cycle continues from where the files say it is.
+
+```mermaid
+flowchart LR
+    A["Intent"] --> B["Scenarios<br/>00-interaction-scenarios.md"]
+    B --> C["Workflow<br/>01-workflow.md"]
+    C --> D["Task sequence<br/>02-task-sequence.md"]
+    D --> E["Task files<br/>draft → detail → slices → validation"]
+    E --> F["Execution<br/>one git worktree per task"]
+    F --> G["Independent validation<br/>proof per criterion"]
+    G --> H["Merge and close"]
+```
+
+What that gives you:
+
+- **Resumable work.** The stage is detected from files and task frontmatter. Nothing depends
+  on chat memory.
+- **Small, checkable tasks.** A feature becomes a dependency graph of tasks, each with one
+  deliverable, its own acceptance criteria and its own test commands.
+- **Parallel execution without collisions.** Tasks with disjoint work areas run at the same
+  time, each in its own git worktree, and merge one at a time.
+- **Validation by a second agent.** A task is accepted by a fresh agent that proves every
+  criterion from code, tests and command output. It did not write the code.
+- **The right model for each role.** An architect, a developer, a validator and a researcher
+  run on different models and effort levels, and the project records which ones actually
+  worked.
+- **Bug fixes sized to the bug.** A one-line cause is fixed directly with a regression test.
+  A cross-layer one gets a developer and an independent check. A design gap becomes a
+  planned change.
+- **Hands-off modes.** An autopilot that asks nothing, and four scheduled agents that fix
+  known issues and advance the backlog on their own branches.
+
+> **Status: early.** Version 0.4.0. The skills are used on real projects, and the scripts
+> have tests, but the prompts have no automated evaluation suite yet. Expect rough edges and
+> read the [changelog](CHANGELOG.md) before you update.
+
+## Contents
+
+- [Quick start](#quick-start)
+- [Commands](#commands)
+- [How a feature moves](#how-a-feature-moves)
+- [The bundle](#the-bundle)
+- [Roles, models and delegation](#roles-models-and-delegation)
+- [Consilium](#consilium)
+- [Scheduled agents](#scheduled-agents)
+- [Project profile](#project-profile)
+- [Requirements](#requirements)
+- [Install, update, uninstall](#install-update-uninstall)
+- [Repository layout](#repository-layout)
+- [Tests](#tests)
+- [Changelog, license, author](#changelog-license-author)
+
+## Quick start
+
+1. Install the plugin.
+
+   ```sh
+   # Claude Code
+   claude plugin marketplace add pavelbender/dev-cycle-skills --scope user
+   claude plugin install dev-cycle@dev-cycle-skills --scope user
+
+   # Codex
+   codex plugin marketplace add pavelbender/dev-cycle-skills
+   codex plugin add dev-cycle@dev-cycle-skills
+   ```
+
+2. Tell it about your project. Paste [`examples/AGENTS.dev-cycle.md`](examples/AGENTS.dev-cycle.md)
+   into the root `AGENTS.md` (or `CLAUDE.md`) and edit the commands and paths.
+
+3. Open a new session and give it an intent.
+
+   ```text
+   /dev-cycle:cycle let users void an invoice from the billing console
+   ```
+
+   The cycle proposes a bundle path, writes the scenarios, the workflow and the task
+   sequence, and stops at each point that needs your decision. To continue later:
+
+   ```text
+   /dev-cycle:cycle docs/tasks/billing/void-invoice
+   ```
+
+## Commands
+
+Four commands. Everything else runs through them.
+
+| Command | What it does |
+| --- | --- |
+| `/dev-cycle:cycle <intent or bundle path>` | drives a feature through the stages, or runs one stage |
+| `/dev-cycle:fix <bug report>` | fixes a bug by the shortest path its cause allows |
+| `/dev-cycle:consilium <question>` | seats 4–5 role agents on one hard cross-domain question |
+| `/dev-cycle:automation install` | sets up the scheduled agents for the current repository |
+
+In Codex the prefix is `$`: `$dev-cycle:cycle <intent or bundle path>`.
+
+### `cycle`
+
+| Option | Effect |
+| --- | --- |
+| `--plan` | planning only: stop when every task file has its four passes |
+| `--task <TNN,…>` | only these tasks: their missing planning passes, then execution and validation |
+| `--until <stage>` | stop after `scenarios`, `workflow`, `sequence`, `drafts`, `detail`, `slices`, `validation` or `execution` |
+| `--no-stop` | skip confirmation gates; real questions and failures still stop |
+| `--auto` | autopilot: asks nothing, decides open questions itself, lists every decision in the report |
+
+`cycle` is also the entry to a single stage. Ask in plain words:
 
 ```text
-Claude Code:  /dev-cycle:cycle <intent or bundle path>
-Codex:        $dev-cycle:cycle <intent or bundle path>
+/dev-cycle:cycle plan the scenarios for the invoice console
+/dev-cycle:cycle detail T05
+/dev-cycle:cycle validate T07
+/dev-cycle:cycle tidy docs/tasks/billing
 ```
 
-`cycle` reads the bundle's files, works out the stage, runs the next skill and stops where it
-needs you. Calling it again with the bundle path continues from the files, not from chat
-memory.
+**Gates.** Without options the cycle stops for the bundle path of a new intent, a topic
+choice, a blocking owner question, a replan signal, a failed validation, the batch plan
+before execution, and the merge into your working branch.
 
-| Option            | Effect                                                                                                    |
-| ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `--until <stage>` | stop after `scenarios`, `workflow`, `sequence`, `drafts`, `detail`, `slices`, `validation` or `execution` |
-| `--no-stop`       | skip confirmation gates; real questions and failures still stop                                           |
-| `--auto`          | autopilot: asks nothing, decides open questions itself and lists the decisions in the report; no push      |
+**Autopilot.** `--auto` takes the recommended option at every gate and records each choice
+where its question was, as `autopilot: <choice> — <reason>`. It never pushes, deploys,
+releases or publishes, and never touches production, secrets, credentials, customer data or
+an applied migration: those steps are skipped and listed in the report.
 
-## Install
+### `fix`
 
-Clone or copy this repository anywhere. Git, Claude Code and Codex must be on `PATH`.
-The commands below use relative paths and work in PowerShell and Bash. Each section says
-which directory to run them from. Keep the clone in place while using it as a marketplace.
+Describe the bug in any form: a sentence, a screenshot, an error text, a log, a failing test.
+You can also just say it in the chat; the skill loads on a bug report without the command.
 
-This repository already contains its own marketplace catalogs for Claude and Codex.
-Registering the local path adds that catalog to your client, then you install `dev-cycle`
-from it. Anyone with a copy of the repository can install locally; publication in an
-official public directory is optional and is only needed for discovery through that directory.
+```text
+/dev-cycle:fix deleting a role fails with "Failed to delete role", screenshot attached
+```
 
-If you have not cloned the repository yet:
+The agent writes down the defect, reproduces it and traces it to the root cause. Only then
+does it choose how heavy the fix has to be, from the cause and not from the wording of the
+report:
+
+| Path | Taken when | What happens |
+| --- | --- | --- |
+| direct | one cause in one component; the fix and its test stay within five files | the agent fixes it itself: failing test, fix, rerun of the reproduction. No documents, no subagents |
+| briefed | several layers or more than five files; or the fix changes an authorization check, a schema, or code that deletes or rewrites stored data | a developer agent fixes it in its own worktree from a written brief; a second agent checks it without seeing the developer's report |
+| planned | more than one unit of work; a contract changes and its consumers must follow; stored data needs repair; the correct behaviour was never specified | the bug becomes a bundle and goes through `cycle` |
+
+The path can change on the way. A direct fix that reaches a sixth file or a schema moves up
+to briefed. A check that still fails after two attempts sends the agent back to the search
+for the cause; it does not try a third variant. A fix that turns out to be one change in one
+component moves down to direct. The search for the cause is sized the same way: a direct
+trace first, then up to three ranked hypotheses, then `git bisect`, temporary logging and
+parallel researchers, then the advisor or a consilium.
+
+| Option | Effect |
+| --- | --- |
+| `--diagnose` | find and report the cause and the path; change no code |
+| `--auto` | ask nothing; a bug that cannot be reproduced or isolated is recorded and the run ends |
+
+A bug that is left open goes into the project's `known_issues` file when the profile has
+one, and a fixed one is removed from it.
+
+## How a feature moves
+
+| # | Stage | Produces | Stage skill | Role |
+| --- | --- | --- | --- | --- |
+| 1 | scenarios | `00-interaction-scenarios.md`; skipped when no screen or CLI flow is involved | `plan-scenarios` | UI/UX expert |
+| 2 | workflow | `01-workflow.md`: target model, invariants, decisions | `plan-feature` | system architect |
+| 3 | sequence | `02-task-sequence.md`: tasks, dependencies, proof points | `plan-feature` | system architect |
+| 4 | drafts | a stub file per task | `write-task` | solution architect |
+| 5–6 | detail, slices | each task verified against the code; subagent-ready items marked | `write-task` | solution architect |
+| 7 | validation | one checkable case per criterion, exact test commands | `write-task` | QA developer |
+| 8 | execution | code, tests and docs per task; a validation verdict per task | `run-bundle` → `execute-task`, `validate-task` | developer, QA developer |
+| 9 | close | evidence for every proof point; the bundle moved to `_completed/`; branches merged | `tidy-folder` | release manager |
+
+The stage skills are read by `cycle`; they are not commands of their own. Two contracts
+apply throughout: `task-layout` (document layout, identifiers, frontmatter, the project
+profile, delegation rules) and `coding-rules` (code structure rules `cs-001`…`cs-028`, which
+also load on their own whenever the agent writes code).
+
+Planning runs in waves: task files with no dependency between them are written in parallel.
+Execution runs in batches: ready tasks with disjoint work areas each get a worktree and a
+developer, then an independent QA developer, and merge into the bundle branch one at a time.
+
+## The bundle
+
+One directory holds everything about one feature.
+
+```text
+<tasks_root>/<domain>/<feature-slug>/
+  00-interaction-scenarios.md   # optional
+  01-workflow.md
+  02-task-sequence.md           # source of truth for task IDs and dependencies
+  tasks/
+    T01-<task-slug>.md
+    T02-<task-slug>_DONE.md
+    T03-<task-slug>_VAL.md
+  evidence/
+    P01-<proof-slug>.md
+```
+
+Every task file starts with frontmatter that a script can read:
+
+```yaml
+---
+id: T02
+status: done            # formed | in_progress | review | done | validated | withdrawn
+blocked_by: [T01]
+blocks: [T05, T08]
+milestone: P01
+pass: validation        # draft | detail | slices | validation
+---
+```
+
+A task is ready when everything in `blocked_by` is `done` or `validated`. Readiness comes
+from the graph, never from file numbers. `TNN` are tasks, `PNN` are proof points with their
+evidence files, `SNN` are subagent-ready items inside a task. Published IDs are never
+renumbered.
+
+`plugins/dev-cycle/skills/task-layout/scripts/bundle-status.sh <bundle>` prints the status
+map, the dependency waves and the current stage of any bundle.
+
+## Roles, models and delegation
+
+Work is delegated by role, and each role starts on the cheapest model and effort that is
+known to do it well.
+
+| Tier | Claude Code | Codex | Used for |
+| --- | --- | --- | --- |
+| deep | `fable` | newest Astra | architecture, the hardest design work |
+| strong | `opus` | newest Sol | task design against code, cross-layer work, debugging |
+| everyday | `sonnet` | newest Terra | implementation, validation, tests |
+| light | `haiku` | newest Luna | lookups, evidence packs, merges |
+
+- **Observed results beat vendor claims.** The coordinator keeps a model-notes file per
+  project: role, model, effort, task kind, outcome. Three like-for-like observations override
+  the starting values.
+- **One place for the rules.** When to delegate and what it costs, how deep subagents may
+  nest, how big one unit of work should be, what runs in parallel, and how to brief a
+  subagent are all in
+  [`roles-and-models.md`](plugins/dev-cycle/skills/task-layout/references/roles-and-models.md).
+- **One committer per tree.** Parallel writers work in separate worktrees, or on disjoint
+  files with the parent committing.
+- **Read-only where it matters.** In Claude Code the plugin ships two agent types,
+  `dev-cycle:researcher` and `dev-cycle:consilium-member`, whose tools cannot edit files or
+  run commands.
+
+The model and effort values follow Anthropic's prompting guides for the current Claude
+models; [`docs/anthropic/README.md`](docs/anthropic/README.md) maps each guide statement to
+the place where the plugin applies it.
+
+Claude Code nests subagents three layers deep by default, which is what the skills are built
+for. A fourth layer needs `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH=4` in the `env` block of
+your `settings.json`; a plugin cannot set it.
+
+## Consilium
+
+Some questions are too wide for one agent: they span several functional domains of the
+product, and no single role sees every consequence. A consilium answers them.
+
+1. The chair frames one neutral question with its constraints and evidence paths.
+2. Four or five role agents study it independently, each from its own lens, without seeing
+   each other. They are read-only.
+3. If they disagree, one challenge round: every member gets the other positions and answers
+   them.
+4. The chair checks the evidence, decides, and records the decision with the dissent and the
+   fact that would reopen it.
+
+It is the most expensive decision tool of the set, so it sits last on a ladder: evidence
+first, then the host's advisor when it has one, then a consilium. It prepares options for the
+owner; it never replaces an owner decision.
+
+## Scheduled agents
+
+Claude Code only. Four unattended agents work on a repository while you do something else.
+Each run takes one item, works in its own worktree and branch, writes a report and a ledger
+row, and stops. Nothing is pushed or merged into your working branch: you review the reports
+and merge the branches.
+
+| Agent | Default interval | One run | Model, effort |
+| --- | --- | --- | --- |
+| `collect-issues` | 6 hours | collects untracked defects into the known-issues file | `sonnet`, `high` |
+| `collect-backlog` | 6 hours | collects deferred and undone work into the backlog | `sonnet`, `high` |
+| `autodebug` | 30 minutes | fixes one known issue | `opus`, `high` |
+| `autobacklog` | 30 minutes | advances one backlog item, a whole feature through `cycle` if needed | `opus`, `medium` |
+
+```text
+/dev-cycle:automation install --work 60m --collect 12h
+```
+
+`automation` checks the project profile, plans the start times so that the collectors feed
+the workers, dry-runs each agent, installs them (Task Scheduler on Windows, cron on Linux and
+macOS) and explains the routine it expects from you. The same skill does `status`, `pause`,
+`resume`, a new interval and `uninstall`, for all agents or one.
+
+One agent at a time:
+
+```text
+/dev-cycle:automation install --jobs autodebug --work 60m    schedule one agent
+/dev-cycle:automation run collect-issues                     one run now, outside the schedule
+/dev-cycle:automation dry-run autobacklog                    show what it would pick, change nothing
+/dev-cycle:automation pause autodebug                        also: resume, uninstall
+```
+
+Intervals are minutes that divide an hour (`5m`, `10m`, `15m`, `20m`, `30m`) or whole hours
+that divide a day (`1h`, `2h`, `3h`, `4h`, `6h`, `8h`, `12h`, `24h`).
+
+> **Warning.** The scheduled agents run with `--permission-mode bypassPermissions`: every
+> command the agent decides to run executes as your user without a prompt. Install them only
+> on a machine and a repository where that is acceptable.
+
+## Project profile
+
+Project facts come from the project, never from the skills. The cycle reads them from a
+`## Dev cycle` section of the root `AGENTS.md` (or `CLAUDE.md`).
+
+| Key | Meaning |
+| --- | --- |
+| `tasks_root` | where bundles live; default `docs/tasks/` |
+| `format`, `lint`, `test` | the project's commands; `test` takes `{path}` |
+| `stand` | optional: commands that raise a runtime environment and smoke-test it |
+| `wip_branch`, `bundle_branch`, `task_branch` | where finished work lands and how branches are named |
+| `worktree_root`, `worktree_setup` | where task worktrees are created and how dependencies are installed |
+| `decisions`, `glossary` | decision records and domain terms, when the project keeps them |
+| `boundaries` | one rule that every subagent brief carries |
+| `known_issues`, `backlog` | the files the scheduled agents read and feed |
+| `jobs_state`, `job_notes`, `model_notes` | state and project notes of the scheduled agents and the coordinator |
+
+The full list with defaults is in
+[`task-layout`](plugins/dev-cycle/skills/task-layout/SKILL.md#project-profile); a filled
+example is in [`examples/AGENTS.dev-cycle.md`](examples/AGENTS.dev-cycle.md).
+
+## Requirements
+
+| Component | Needed for | Notes |
+| --- | --- | --- |
+| git | everything | worktrees are used for execution |
+| Claude Code | the full feature set | developed and checked with 2.1.322. Effort per subagent call needs 2.1.292 or later; without it subagents run at their model's default effort |
+| Codex | the skills | the same skill files; the scheduled agents and the two read-only agent types are Claude Code only |
+| bash | `bundle-status.sh`, the tests | on Windows use Git Bash; without bash the skills build the status map by hand |
+| PowerShell 7 | scheduled agents on Windows | with Task Scheduler |
+| cron | scheduled agents on Linux and macOS | |
+
+## Install, update, uninstall
+
+Install for one project only: run the Claude Code commands from its root with
+`--scope project`; for Codex see [`examples/codex-project.toml`](examples/codex-project.toml).
 
 ```sh
-git clone https://github.com/pavelbender/dev-cycle-skills.git
-cd dev-cycle-skills
-```
-
-Choose **one scope per client**. A user installation is available in all your projects; a
-project installation enables the plugin only in that project. Both install the complete
-plugin, including its fourteen skills, reference files and icon.
-
-### Claude Code — user
-
-Run from the root of the `dev-cycle-skills` clone:
-
-```sh
-claude plugin marketplace add ./ --scope user
-claude plugin install dev-cycle@dev-cycle-skills --scope user
-claude plugin details dev-cycle
-```
-
-The marketplace and enabled state are recorded in the user's Claude settings. Open a new
-session and invoke `/dev-cycle:cycle`. `plugin details` should list fourteen skills.
-Use `./` for the current directory: Claude Code 2.1.312 rejects a bare `.` as a marketplace source.
-
-### Claude Code — project
-
-Run from the target project's root. This example places the clone next to that project,
-so its relative path is `../dev-cycle-skills`. Adjust that path if your folders differ:
-
-```sh
-claude plugin marketplace add ../dev-cycle-skills --scope project
-claude plugin install dev-cycle@dev-cycle-skills --scope project
-claude plugin details dev-cycle
-```
-
-This records the marketplace and enabled state in the project's `.claude/settings.json`.
-Open a new session in that project and invoke `/dev-cycle:cycle`. Other collaborators must
-have access to the marketplace and install the plugin on their machines too. A local path
-is machine-specific; use the GitHub source below for shared project settings.
-
-### Codex — user
-
-Run from the root of the `dev-cycle-skills` clone:
-
-```sh
-codex plugin marketplace add .
-codex plugin add dev-cycle@dev-cycle-skills
-codex plugin list
-```
-
-This installs the plugin into Codex's user cache and enables it in `~/.codex/config.toml`
-(or `$CODEX_HOME/config.toml` when configured). Open a new session and invoke
-`$dev-cycle:cycle`. In the desktop app, restart the app to refresh the Plugins Directory.
-
-### Codex — project
-
-Codex has no `plugin add --scope project`. Merge the following tables into the target
-project's `.codex/config.toml`. As in the Claude project example, this assumes the clone
-is next to the target project. Start Codex from the target project's root when using this
-relative `source`; adjust it if your folders differ.
-An editable copy is in [`examples/codex-project.toml`](examples/codex-project.toml).
-If either table already exists, update its keys instead of adding a duplicate table.
-
-```toml
-[marketplaces.dev-cycle-skills]
-source_type = "local"
-source = "../dev-cycle-skills"
-
-[plugins."dev-cycle@dev-cycle-skills"]
-enabled = true
-```
-
-Start Codex in the target project and accept its normal project trust prompt. Codex loads
-project configuration only for trusted projects. The configured plugin is then copied to
-the user cache during plugin refresh; its activation is controlled by this project's config.
-Open a new session after the first refresh and invoke `$dev-cycle:cycle`. In the desktop
-app, restart with that project open and check the plugin under **Dev Cycle Skills**.
-The shared cache does not enable this project installation in other projects.
-
-For this scope, use the project config above directly. Running `codex plugin add` enables
-the plugin in user settings. If you previously installed it for the user, set
-`enabled = false` in the existing `[plugins."dev-cycle@dev-cycle-skills"]` table in
-`~/.codex/config.toml`; the project's `enabled = true` overrides it there.
-
-### Install from GitHub
-
-After the plugin changes have been pushed to GitHub, replace the local marketplace path in
-the Claude and Codex user commands with `pavelbender/dev-cycle-skills`. For Codex project
-settings, use `source_type = "git"` and
-`source = "https://github.com/pavelbender/dev-cycle-skills.git"` in the marketplace table.
-For Claude project settings, add the marketplace with the GitHub source and `--scope project`.
-These sources can be committed without a machine-specific path.
-
-### Check an installation
-
-Validated locally with Claude Code **2.1.312** and Codex CLI **0.165.0**. Older clients may
-not support these plugin commands; update the client if a command is missing.
-
-```sh
-# Run from the dev-cycle-skills clone root.
-claude plugin validate --strict ./plugins/dev-cycle
-claude plugin list
-codex plugin marketplace list
-```
-
-Claude's `plugin details dev-cycle` lists the fourteen skills. In a Codex session, the skill
-picker lists them as `dev-cycle:<name>`. `codex plugin list` is useful for user installations;
-on Codex CLI 0.165.0 it does not report the project-only installation reliably, so verify
-that scope from a session in the target project.
-
-If you used the earlier symlink installer, remove only its dev-cycle links from
-`.agents/skills` or `.claude/skills` before switching to the plugin, so the same skills do
-not appear twice. `scripts/install.sh` remains an optional raw-skills installer; it does not
-install the plugin or its icon.
-
-## Update
-
-For a marketplace installed from a **local clone**, first update it from the clone's root:
-
-```sh
-git pull --ff-only
-```
-
-When developing locally, your edits are already in the source clone; skip the pull.
-For a marketplace registered directly from **GitHub**, use the marketplace refresh command
-below instead of pulling a local clone.
-
-Maintainers: increment `version` in **both** plugin manifests together when releasing plugin
-changes. A GitHub push with the same version can leave users on the cached copy.
-
-### Claude Code — user or project
-
-For a GitHub marketplace, refresh its checkout first:
-
-```sh
+# Update
 claude plugin marketplace update dev-cycle-skills
-```
+claude plugin update dev-cycle@dev-cycle-skills --scope user
 
-Then run the command for your installation scope:
-
-| Scope   | Command                                                           | Run from            |
-| ------- | ----------------------------------------------------------------- | ------------------- |
-| User    | `claude plugin update dev-cycle@dev-cycle-skills --scope user`    | Any directory       |
-| Project | `claude plugin update dev-cycle@dev-cycle-skills --scope project` | Target project root |
-
-Open a new Claude session, then check `claude plugin details dev-cycle`. A marketplace
-registered from a local directory loads that directory in place, so local edits become
-available in a new session without publishing a release.
-
-### Codex — user
-
-For a GitHub marketplace, refresh its checkout first:
-
-```sh
 codex plugin marketplace upgrade dev-cycle-skills
-```
-
-For a local marketplace, update the source clone as described above. Then install the
-current package from the refreshed marketplace:
-
-```sh
 codex plugin add dev-cycle@dev-cycle-skills
 ```
 
-Restart Codex and check `codex plugin list`. Codex CLI 0.165.0 has no separate `plugin update`
-command; `marketplace upgrade` refreshes Git sources, while `plugin add` installs the package.
-
-### Codex — project
-
-Update the local source clone, or run `codex plugin marketplace upgrade dev-cycle-skills`
-**from the target project root** for a GitHub source. Keep the existing project's
-`.codex/config.toml` tables and restart Codex in that trusted project. Plugin refresh
-materializes the configured version in the shared cache. Check `$dev-cycle:cycle` in the
-session's skill picker after the refresh.
-
-Use the project config for activation; `codex plugin add` writes user-level activation.
-
-### Refresh a Codex development build with the same version
-
-Codex keeps a cached copy of the plugin. If local source edits are not picked up, close
-sessions using this plugin and evict its cached installation:
-
 ```sh
-codex plugin remove dev-cycle@dev-cycle-skills
-```
-
-For a **user** installation, run `codex plugin add dev-cycle@dev-cycle-skills` again.
-For a **project** installation, leave its `enabled = true` setting in place and restart
-Codex in that trusted project so plugin refresh installs the source again. If the first
-session opens while refresh is still running, open a new session after it completes.
-This cache is shared by projects, so eviction affects other sessions using the same plugin too.
-
-## Uninstall
-
-### Claude Code — user or project
-
-Choose the scope you installed:
-
-| Scope   | Command                                                              | Run from            |
-| ------- | -------------------------------------------------------------------- | ------------------- |
-| User    | `claude plugin uninstall dev-cycle@dev-cycle-skills --scope user`    | Any directory       |
-| Project | `claude plugin uninstall dev-cycle@dev-cycle-skills --scope project` | Target project root |
-
-Optionally unregister the marketplace from the **same scope** if you no longer use it:
-
-```sh
+# Uninstall
+claude plugin uninstall dev-cycle@dev-cycle-skills --scope user
 claude plugin marketplace remove dev-cycle-skills --scope user
-```
 
-For a project marketplace, run from that project's root and use `--scope project` instead.
-Open a new session and check `claude plugin list`. An installation in another scope can
-still make the plugin available there.
-
-### Codex — user
-
-```sh
 codex plugin remove dev-cycle@dev-cycle-skills
-```
-
-This removes the installed cache and the plugin's entry from user config. Optionally
-unregister the user marketplace too:
-
-```sh
 codex plugin marketplace remove dev-cycle-skills
 ```
 
-Restart Codex. Project settings that still enable the plugin can install it again in those
-projects; remove those settings too if you want to stop using it everywhere.
+Remove the scheduled agents with `/dev-cycle:automation uninstall` before you uninstall the
+plugin; they run the installed copy.
 
-### Codex — project
+Without the plugin system, `scripts/install.sh` links the skills into a skills directory
+(`codex-user`, `codex-project <repo>`, `claude-user`, `claude-project <repo>`).
 
-Remove the `[plugins."dev-cycle@dev-cycle-skills"]` and `[marketplaces.dev-cycle-skills]`
-tables from that project's `.codex/config.toml`, preserving all other settings. Remove the
-marketplace table only if no other plugin uses that marketplace. Restart Codex in the
-project. The shared cache can remain for other projects; deleting it is unnecessary for
-removing this project's installation.
-
-If the plugin is also installed for the **user**, removing project settings falls back to
-that user installation. To disable it only in this project, keep this override instead:
-
-```toml
-[plugins."dev-cycle@dev-cycle-skills"]
-enabled = false
-```
-
-The lifecycle commands above apply to plugin installations. For skills linked by the old
-`scripts/install.sh`, update by pulling the source clone and starting a new session; uninstall
-by removing only those fourteen symlinks from the chosen `.agents/skills` or `.claude/skills`
-directory. Keep the source clone until no remaining installation refers to it.
-
-References: [Claude plugin management](https://code.claude.com/docs/en/discover-plugins),
-[Codex plugin packaging and marketplaces](https://developers.openai.com/plugins/build/plugins).
-
-## Set up a project
-
-Paste [`examples/AGENTS.dev-cycle.md`](examples/AGENTS.dev-cycle.md) into the project's root
-`AGENTS.md` (or `CLAUDE.md`) and edit it. The skills never hardcode commands, branches or
-paths: they read this `## Dev cycle` section and fall back to the defaults in
-[`task-layout`](plugins/dev-cycle/skills/task-layout/SKILL.md#project-profile). A missing
-command without a default makes the agent ask once.
-
-`cycle` and `run-bundle` coordinate: each stage and each task goes to a subagent with a role
-(system architect, solution architect, uiux expert, developer, QA developer, researcher,
-release manager) and a model of the host's own family picked by tier and effort. Claude Code
-uses Fable, Opus, Sonnet and Haiku; Codex uses Astra, Sol, Terra and Luna. The coordinator logs
-observed results in `.dev-cycle/model-notes.md` (40 rows max, never committed) and reads it
-before delegating, so measured results gradually replace vendor defaults. See
-[roles and models](plugins/dev-cycle/skills/task-layout/references/roles-and-models.md).
-
-## Example
-
-Intent:
+## Repository layout
 
 ```text
-/dev-cycle:cycle add file upload on page X: the file is saved, then a notification about it goes to
-the users of the project it was uploaded to, within the same organisation
+plugins/dev-cycle/
+  skills/          cycle, fix, consilium, automation; the stage skills; the two contracts
+  agents/          researcher and consilium-member: read-only agent types (Claude Code)
+  agent-jobs/      the runner for scheduled agents (sh, ps1), common rules, one file per job
+  assets/          the icon
+examples/          a project profile to paste; a Codex project config
+docs/anthropic/    how the plugin maps to Anthropic's prompting guides
+tests/             tests for the runner and the status script
+scripts/           install.sh for a setup without the plugin system
 ```
 
-What happens, stage by stage. Names below are illustrative; the agent takes real ones from
-the code.
+## Tests
 
-**Stop 1 — where the feature lives.** No bundle yet, so the agent proposes
-`docs/tasks/<domain>/project-file-upload/` and waits for "yes" or another path.
-
-**Stage 1 — scenarios, `00-interaction-scenarios.md`.** The intent names a page, so there is
-a GUI. The document holds `S01` a project member uploads a file on page X; `S02` members of the
-same project and organisation get a notification; `S03` a member from another organisation
-gets nothing (negative); page states: empty, uploading, success, too large, wrong type, no
-permission, network failure; open questions.
-
-**Stop 2 — questions the plan cannot go without.** For example: size limit and file types;
-channel (in-app, email, both); who counts as a project user; notify the uploader or not. One
-line answers them ("50 MB, any type, in-app, all members, not the uploader"); answers are
-recorded as decisions.
-
-**Stage 2 — workflow, `01-workflow.md`.** Target model and invariants: a file is visible only
-after it is stored and committed; recipients = project members ∩ project organisation − the
-uploader; a notification goes out only after commit and never twice; nothing crosses to
-another organisation. Plus an impact map of the layers that change.
-
-**Stage 3 — task sequence, `02-task-sequence.md`.** A dependency graph with proof points,
-roughly:
-
-```text
-T01 file model + storage ─► T02 upload API ─► T03 recipients + event ─► T04 in-app delivery
-                               └─► T05 UI: upload on page X               └─► T06 UI: notification list
-P01 after T01–T02: upload via API works, a foreign project gets 403
-P02 after T03–T04: same-organisation members see the notification, others do not
-P03 after T05–T06: the whole scenario in a browser
+```sh
+bash tests/test_bundle_status.sh                    # status map, waves and stage on fixture bundles
+bash tests/test_agent_job.sh                        # cron schedules, model pinning, prompt composition
+pwsh -NoProfile -File tests/test_agent_job.ps1      # the same for the Windows runner
+claude plugin validate plugins/dev-cycle            # manifest and frontmatter
 ```
 
-**Stages 4–7 — task files, `tasks/T01-…md` … `T06-…md`.** Four passes, each recorded as
-`pass:` in frontmatter:
+The runner tests use a stub scheduler and a stub `claude` in a temporary profile; they do not
+touch your crontab, Task Scheduler or Claude Code settings.
 
-| Pass         | Adds                                                                |
-| ------------ | ------------------------------------------------------------------- |
-| `draft`      | frontmatter, goal, scope, stub criteria                             |
-| `detail`     | check against code: what exists, contract, changes by layer, plan   |
-| `slices`     | `S01…` items a subagent can do with small context and its own check |
-| `validation` | each criterion becomes one case with an exact command               |
+## Changelog, license, author
 
-No confirmations here; the agent stops only if the code contradicts the plan.
+- [Changelog](CHANGELOG.md)
+- License: [MIT](LICENSE)
+- Author: [Pavel Bender](https://pavelbender.com)
 
-**Stop 3 — before implementation.** The agent shows the bundle branch, the order
-(`T01 → T02 → T03 ∥ T05 → T04 → T06`, parallel only where code does not overlap), worktrees
-and stands, and waits.
-
-**Stage 8 — execution (`run-bundle`).** Per task: own worktree and branch, a worker runs
-`execute-task` then `validate-task`, the coordinator reruns format, lint and tests itself and
-merges the task branch into the bundle branch. A task waiting for another starts only after
-that one is merged. Each closed `PNN` leaves a report in `evidence/`. Automatic stops: two
-failed validations, a stale task, a code conflict at merge.
-
-**Stop 4 — close.** All tasks validated, proof points closed: move the bundle to
-`_completed/` and merge the bundle branch into the WIP branch? Production deployment is
-outside these skills.
-
-Result:
-
-```text
-docs/tasks/<domain>/project-file-upload/
-  00-interaction-scenarios.md
-  01-workflow.md
-  02-task-sequence.md
-  tasks/T01-file-model-storage_VAL.md … T06-notification-list-ui_VAL.md
-  evidence/P01-….md  P02-….md  P03-….md
-```
-
-## Skills
-
-| Skill            | One step                                                                     |
-| ---------------- | ---------------------------------------------------------------------------- |
-| `cycle`          | router: detect the stage, run the next skill, stop at gates                  |
-| `plan-scenarios` | GUI/TUI scenarios → `00-interaction-scenarios.md`                            |
-| `plan-feature`   | `01-workflow.md` and `02-task-sequence.md` (`workflow` / `sequence` / `all`) |
-| `write-task`     | task files; passes `draft`, `detail`, `slices`, `validation`                 |
-| `execute-task`   | implement one task file                                                      |
-| `validate-task`  | validate one finished task with proof per criterion                          |
-| `run-bundle`     | worktree per task, execute + validate, merge                                 |
-| `tidy-folder`    | tidy a docs folder, move closed bundles, fix links                           |
-| `autodebug`      | scheduled unattended agent: fix one known issue per run on its own branch    |
-| `autobacklog`    | scheduled unattended agent: advance one current backlog item per run         |
-| `collect-issues` | scheduled unattended agent: collect untracked problems into known issues     |
-| `collect-backlog`| scheduled unattended agent: collect deferred and undone work into the backlog |
-| `task-layout`    | contract: layout, IDs, frontmatter, language, project profile                |
-| `coding-rules`   | contract: code structure rules `cs-001`…`cs-028`                             |
-
-`write-task`, `run-bundle`, `tidy-folder` and the four unattended jobs are hidden from
-automatic invocation in Claude Code (`disable-model-invocation`); run them explicitly or let
-`cycle` run them.
-
-## Unattended jobs
-
-Each job installs a scheduled task per repository (Windows Task Scheduler, or a crontab line on
-Linux and macOS) that runs a headless Claude Code agent (model pinned to `opus`, each run killed after 2 h):
-
-| Job | Every | Default start | Does |
-| --- | --- | --- | --- |
-| `autodebug` | 30 min | spread, e.g. :07 | fixes one item of `known_issues` |
-| `autobacklog` | 30 min | 15 min after `autodebug` | advances one current `backlog` item, new features through `cycle` |
-| `collect-issues` | 6 h | 00:00 | adds untracked problems from docs, reports and code markers to `known_issues` |
-| `collect-backlog` | 6 h | 03:00 | adds deferred and undone work from docs and bundles to `backlog` |
-
-The two workers share a cap of two agents per machine; collectors are not capped. Every run
-works in its own worktree and branch (collectors keep one rolling branch each,
-`collect/known-issues` and `collect/backlog`, which the workers also read), writes a report
-and a ledger row under `jobs_state`, and never pushes or merges: you review the reports and
-merge the branches. Agents decide technical and small product questions themselves and stop
-with a question only for architecture, business functionality or business-critical areas
-(production, release, publish, secrets).
-
-```text
-/dev-cycle:autobacklog install      # also: dry-run, status, pause, resume, uninstall
-/dev-cycle:autodebug install
-/dev-cycle:collect-issues install   # -Hour N (--hour N on Linux, macOS) moves the 6-hour cycle
-/dev-cycle:collect-backlog install
-```
-
-The agents run with `--permission-mode bypassPermissions`: unattended, they execute any
-command as your user without asking, limited only by the job instructions. Install them
-only on a machine and account where that is acceptable.
-
-Add `known_issues`, `backlog` and optionally `jobs_state` and `job_notes` to the project
-profile first. Tasks run the stable copy `~/.claude/agent-jobs/agent-job.ps1` (Windows, PowerShell 7)
-or `agent-job.sh` (Linux and macOS, bash and cron), which reads the job text from the
-installed plugin on every run, so plugin updates need no reinstall. Claude Code only; the jobs
-need the plugin installation, not `scripts/install.sh`. On macOS cron may need Full Disk Access
-and cannot always read the login keychain: if runs end with `exit 1, report missing` in the
-ledger, read `logs/<stamp>.err.log` and `.jsonl` in the state directory.
-
-## Language
-
-People read about a tenth of these documents: purpose, scope, decisions, questions, risks,
-verdicts, summaries. Those parts are written in the user's language. Everything for agents —
-current-state tables, contracts, steps, subagent items, criteria mechanics, commands — is
-compact English.
-
-## Layout
-
-```text
-.claude-plugin/marketplace.json         Claude Code marketplace (this repo)
-.agents/plugins/marketplace.json        Codex marketplace (this repo)
-plugins/dev-cycle/.claude-plugin/       Claude plugin manifest
-plugins/dev-cycle/.codex-plugin/        Codex plugin manifest
-plugins/dev-cycle/assets/icon.png       shared plugin icon
-plugins/dev-cycle/skills/<name>/SKILL.md
-plugins/dev-cycle/agent-jobs/           runner, installer and shared rules of the unattended jobs
-scripts/install.sh                      symlink skills for Codex or Claude without the plugin
-examples/AGENTS.dev-cycle.md            project profile to paste into AGENTS.md
-examples/codex-project.toml             Codex project installation settings
-```
-
-## License
-
-[MIT](LICENSE).
+Dev Cycle is an independent project. It is not affiliated with or endorsed by Anthropic or
+OpenAI. Claude, Claude Code and Codex are names of their respective owners.
