@@ -7,6 +7,8 @@ description: >-
   asked to validate, verify, accept or review a completed task («провалидируй задачу»,
   «проверь выполненное», «приёмка T07», "validate T07").
 argument-hint: "<task-file-path> [diff|branch|commit]"
+disable-model-invocation: true
+user-invocable: false
 metadata:
   contract: ../task-layout/SKILL.md
 ---
@@ -68,7 +70,8 @@ Validation matrix (initial status `not checked`):
 Find real implementation points: models and migrations, services, CLI/API, schemas, jobs,
 tests, docs. Read targeted; a diff is not enough when a neighbouring guard, service or caller
 controls behaviour. Use a code graph or language server when the
-project has one; text search for literals and docs.
+project has one; text search for literals and docs. Send independent lookups in one message
+so they run at the same time.
 
 Derived artefacts (OpenAPI documents, generated clients, published schemas) are compared with
 their source: a mismatch is a bug.
@@ -139,7 +142,25 @@ Then: criteria matrix (text, status, proof, drift class); drift list split into 
 bugs with the action (kept / fixed / needs replan); failure paths checked; commands run and
 not run with reasons; residual risks (stand not raised, criterion proved by code without a
 dedicated test, …). Fixes, status and evidence are committed per [`task-layout`](../task-layout/SKILL.md#git-hygiene); name the
-branch and commits.
+branch and commits. Write the report per [Reports](../task-layout/SKILL.md#reports).
+
+## Delegation
+
+When, how deep, which model and the brief format:
+[delegation](../task-layout/references/roles-and-models.md). Your fan-out points:
+
+- **Checks per criterion** (phase 3): with more than about eight atomic checks, or checks in
+  unrelated areas, give read-only helpers disjoint groups of matrix rows. Each returns per
+  row: status, proof path, command and output. You own the matrix and the verdict: open the
+  proof of every `failed` and every `passed with deviation` yourself.
+- **Noisy runs**: a helper runs a long suite or a stand smoke and returns only the failures
+  with their output.
+- Fixes (phase 6) are yours and single-threaded; you are the one committer.
+
+Whether a deviation is benign is your call, on the phase 4 conditions. When that call turns
+on an architecture question across several domains, return `needs consilium: <question> ·
+<domains> · <evidence paths>` with the verdict `Task not validated: bugs remain.` Only the
+main conversation convenes a [`consilium`](../consilium/SKILL.md).
 
 ## Checklist
 

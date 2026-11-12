@@ -1,47 +1,3 @@
----
-name: collect-backlog
-description: >-
-  Scheduled unattended agent that walks the repository's documents, task bundles and job
-  reports for work explicitly described as deferred, not done, postponed or planned for the
-  future, checks that it is still current and not done, and adds it to the project's backlog
-  on a rolling branch that autobacklog also reads. Install, dry-run, pause, resume, check or
-  remove the scheduler job (Windows Task Scheduler, cron on Linux and macOS) for the current repository. Use when asked to set up
-  or manage automatic backlog collection («сборщик задач для backlog», «поставь
-  collect-backlog», "schedule collect-backlog").
-argument-hint: "install [-Hour N | --hour N] | dry-run | status | pause | resume | uninstall"
-disable-model-invocation: true
-metadata:
-  contract: ../task-layout/SKILL.md
----
-
-# Collect backlog
-
-Every 6 hours (by default at 03:00, 09:00, 15:00, 21:00) a headless Claude Code agent reads
-what changed since its last run, finds work that documents defer or leave undone, proves it
-is still current, and adds it to the `backlog` file on the branch `collect/backlog`.
-`autobacklog` reads that branch too and can take a collected item into the dev cycle before
-the owner merges it. Rules shared with the other jobs:
-[`../../agent-jobs/common.md`](../../agent-jobs/common.md).
-
-## Operator
-
-Run from the target repository root; `<plugin>` is this plugin's root (two levels above
-this file). The job runs Claude Code. Windows uses `agent-job.ps1` (PowerShell 7, Task
-Scheduler); Linux and macOS use `agent-job.sh` (bash, cron) with `--minute N`, `--hour N`,
-`--dry-run` instead of `-Minute N`, `-Hour N`, `-DryRun`.
-
-| Argument | Windows | Linux, macOS |
-| --- | --- | --- |
-| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job collect-backlog [-Hour N]` | `<plugin>/agent-jobs/agent-job.sh install collect-backlog [--hour N]` |
-| `dry-run` | `... -Action run -Job collect-backlog -DryRun` | `... run collect-backlog --dry-run` (candidates only; run in the background) |
-| `status` | `... -Action status` | `... status` |
-| `pause` / `resume` | `... -Action pause -Job collect-backlog` / `-Action resume -Job collect-backlog` | `... pause collect-backlog` / `... resume collect-backlog` |
-| `uninstall` | `... -Action uninstall -Job collect-backlog` | `... uninstall collect-backlog` (state and branch stay) |
-
-Before `install`, the profile (`## Dev cycle` in `AGENTS.md`) must name `backlog`.
-
-<!-- job -->
-
 ## Job: collect deferred and undone work into the backlog
 
 Collect work whose intent is explicit: deferred, postponed, not done, left for a follow-up,
@@ -81,7 +37,7 @@ equivalents in the documents' language (e.g. «отложено», «позже�
 - Not already tracked: compare with the `backlog` file on `wip_branch`, in the operator's
   working tree and on the collector branch, open bundles under `tasks_root`, and the
   `autobacklog` ledger.
-- Current: apply the freshness check of `../autobacklog/SKILL.md`. Done later → `done`.
+- Current: apply the freshness check of `agent-jobs/jobs/autobacklog.md` (under the plugin root of the header). Done later → `done`.
   Concept replaced → `outdated`. Only an owner decision without a chosen direction →
   `needs-owner` (record, do not add).
 - Record every judged note in `seen.md` with its verdict.

@@ -13,10 +13,14 @@ files to read. The job section below says what to pick and how to finish it.
   area you touch.
 - The job notes file named in the header, if any, holds project specifics: skip lists, live
   environments, stand ports, branch names, extra rules. Notes override this file and the job
-  section where they differ.
-- Other dev-cycle skills (`cycle`, `execute-task`, `validate-task`, `run-bundle`) are in the
-  plugin root's `skills/<name>/SKILL.md`. Invoke them with the Skill tool when it is
-  available, otherwise read the file and follow it. Never paraphrase a skill from memory.
+  section where they differ, except the hard rules below: a hard rule gives way to the notes
+  only where it says so itself.
+- Other dev-cycle skills (`cycle`, `execute-task`, `validate-task`, `run-bundle`,
+  `consilium`) are in the plugin root's `skills/<name>/SKILL.md`. Read the file and follow
+  it; the stage skills are not listed as commands. Never paraphrase a skill from memory.
+- You are the main conversation of this run. Delegate as
+  `skills/task-layout/references/roles-and-models.md` says: when a subagent pays off, which
+  model and effort, how to brief it.
 
 ## Decision policy
 
@@ -39,6 +43,22 @@ functionality. When in doubt whether a decision is architectural or business-lev
 What this machine cannot reach (missing credentials, an OS host you do not have, anything
 the notes declare unavailable) is `blocked`, not `needs-owner`: do the rest and record the
 exact blocked part.
+
+A technical question that spans several domains and is not on the list above: use the
+`consilium` skill when its three conditions hold, and record its decision in the report. It
+does not replace `needs-owner`: a question on the list above still stops the item.
+
+## Carrying the run through
+
+A message with no tool call ends the run, and nobody is there to continue it. Until the
+report and the ledger row are written, every message carries the next tool call. Do not end
+on a summary that announces the next step, on an offer to continue, or on a list of decisions
+that do not block the rest of the work.
+
+An ordinary obstacle (an error, a timeout, a locked file, an empty result, a failing tool)
+is diagnosed and worked through: wait and retry, fix the request, use another tool. The stops
+that are wanted are the ones this file names: the decision policy, the hard rules, the "Stop
+and wrap up by" time.
 
 ## Hard rules
 
@@ -94,7 +114,9 @@ section allows in dry-run. No worktree, no branch, no edits outside the state di
 ## Report
 
 Markdown at `<state>/reports/<stamp>-<slug>.md` (`<stamp>-none.md` without an item), in the
-language of the job's source document. Sections (translate the headings once):
+language of the job's source document. The operator reads it without having seen the run:
+the outcome first, full sentences, no label made up during the work. Sections (translate the
+headings once):
 
 - Outcome — one line: status, item, branch, commit.
 - Selection — why this item; the `wip_branch` commit; rejected candidates with reasons.
@@ -112,6 +134,6 @@ Append one row per item to `<state>/ledger.md`:
 
 `| <stamp> | <slug> | <status> | <branch or -> | <commit or -> | reports/<file> |`
 
-`<slug>` is stable per item. The latest row of an item counts. Statuses common to both jobs:
+`<slug>` is stable per item. The latest row of an item counts. Statuses common to all jobs:
 `done`, `partial`, `abandoned`, `needs-owner`, `blocked`, `no-candidate`, `dry-run`; the job
 section may add more.

@@ -27,8 +27,8 @@ flowchart LR
 
 ## Implementation order
 
-1. `T01` — ...
-2. `T02` and `T03` in parallel after `T01`.
+1. Wave 1: `T01` — the contract.
+2. Wave 2, after `T01`: `T02` and `T03` in parallel (disjoint work areas).
 
 ## Reference documents
 
@@ -54,6 +54,8 @@ Task file: `tasks/T01-<slug>.md`.
 Deliverable: <migration, schema, command, UI capability, report>.
 
 API / contract: <exact operation, schema, CLI, or "Not required">.
+
+Work areas: <packages and directories this task changes; shared files it owns>.
 
 In scope:
 

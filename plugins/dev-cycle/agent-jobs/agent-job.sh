@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Scheduled dev-cycle agent jobs on cron (Linux, macOS): autodebug and autobacklog work on items
-# every 30 minutes; collect-issues and collect-backlog feed them every 6 hours.
+# every 30 minutes by default; collect-issues and collect-backlog feed them every 6 hours by
+# default. --every sets another interval: 30m, 60m, 2h (plain number = minutes).
 # install/uninstall/pause/resume/status manage one crontab line per repository and job, tagged
 # "# dev-cycle:<repo> <job>". Each line runs the stable copy ~/.claude/agent-jobs/agent-job.sh
 # run, which composes the prompt from the installed dev-cycle plugin at run time, so plugin
 # updates need no reinstall. Windows counterpart: agent-job.ps1.
 #
 # usage: agent-job.sh <install|uninstall|pause|resume|status|run> [autodebug|autobacklog|collect-issues|collect-backlog]
-#        [--repo DIR] [--minute N] [--hour N] [--dry-run] [--max-agents N] [--model M]
+#        [--repo DIR] [--every 30m|2h] [--minute N] [--hour N] [--dry-run] [--max-agents N] [--model M] [--effort E]
 set -euo pipefail
 
 JOBS=(autodebug autobacklog collect-issues collect-backlog)
@@ -18,21 +19,35 @@ BUDGET=7200       # hard kill of the agent process group, seconds
 WRAPUP=900        # the agent stops implementing this long before the kill, seconds
 
 ACTION=${1:-}; [ $# -eq 0 ] || shift
-JOB= REPO=. MINUTE=-1 HOUR=-1 DRY=0 MAXAGENTS=2 MODEL=opus   # model pinned: a changed default in the user's settings does not apply
+JOB= REPO=. EVERY= MINUTE=-1 HOUR=-1 DRY=0 MAXAGENTS=2 MODEL= EFFORT=
 while [ $# -gt 0 ]; do
     case $1 in
         autodebug|autobacklog|collect-issues|collect-backlog) JOB=$1 ;;
         --repo) REPO=$2; shift ;;
+        --every) EVERY=$2; shift ;;
         --minute) MINUTE=$2; shift ;;
         --hour) HOUR=$2; shift ;;
         --dry-run) DRY=1 ;;
         --max-agents) MAXAGENTS=$2; shift ;;
         --model) MODEL=$2; shift ;;
+        --effort) EFFORT=$2; shift ;;
         *) echo "unknown argument: $1" >&2; exit 2 ;;
     esac
     shift
 done
-case $ACTION in install|uninstall|pause|resume|status|run) ;; *) sed -n '9,10p' "$SELF" >&2; exit 2 ;; esac
+case $ACTION in install|uninstall|pause|resume|status|run) ;; *) sed -n '10,11p' "$SELF" >&2; exit 2 ;; esac
+
+# minutes <30|30m|2h>: the interval in minutes. Cron cannot express an arbitrary period, so the
+# interval must repeat evenly: a divisor of 60 minutes, or whole hours that divide a day.
+minutes() {
+    local n
+    [[ $1 =~ ^([0-9]+)([mh]?)$ ]] || { echo "--every $1: use minutes or hours, e.g. 30m, 60m, 2h" >&2; return 2; }
+    n=$((10#${BASH_REMATCH[1]})); [ "${BASH_REMATCH[2]}" != h ] || n=$((n * 60))
+    if [ "$n" -lt 1 ] || [ $((1440 % n)) -ne 0 ] || { [ "$n" -lt 60 ] && [ $((60 % n)) -ne 0 ]; } || { [ "$n" -ge 60 ] && [ $((n % 60)) -ne 0 ]; }; then
+        echo "--every $1: use a divisor of an hour (5m, 10m, 15m, 20m, 30m) or whole hours that divide a day (1h, 2h, 3h, 4h, 6h, 8h, 12h, 24h)" >&2; return 2
+    fi
+    echo "$n"
+}
 
 repoName=
 if top=$(git -C "$REPO" rev-parse --show-toplevel 2>/dev/null); then REPO=$top; repoName=$(basename "$REPO")
@@ -81,49 +96,75 @@ cron_edit() {
 
 cron_lines() { crontab -l 2>/dev/null | grep -F ' # dev-cycle:' || true; }
 
+# Model and effort are pinned per job, so a changed default in the user's settings does not
+# apply. Collectors read and write documents; autodebug fixes bugs, where checking matters
+# most; autobacklog builds scoped work. --model and --effort given at install go into the cron
+# line; without them a job follows these defaults, also after a plugin update. A line that
+# names a model and no effort (installs made before effort existed) runs at medium, as it did.
+pin=
+if [ -n "$JOB" ]; then
+    case $JOB in collect-*) dm=sonnet de=high ;; autodebug) dm=opus de=high ;; *) dm=opus de=medium ;; esac
+    [ -z "$MODEL" ] || de=medium
+    [ -z "$MODEL" ] || pin+=" --model $(q "$MODEL")"
+    [ -z "$EFFORT" ] || pin+=" --effort $(q "$EFFORT")"
+    MODEL=${MODEL:-$dm}; EFFORT=${EFFORT:-$de}
+fi
+
 if [ -n "$repoName" ]; then stateRoot=$REPO/$(profile jobs_state .dev-cycle/jobs/); stateRoot=${stateRoot%/}; fi
+
+# Keep the state directory out of the operator's `git status`. Called by install and by run,
+# so a dry run before install leaves the checkout clean too.
+ensure_ignored() {
+    local rel exclude
+    rel=$(profile jobs_state .dev-cycle/jobs/); rel=${rel%/}
+    if git -C "$REPO" check-ignore -q -- "$rel/$JOB/ledger.md"; then return 0; fi
+    exclude=$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)/info/exclude
+    mkdir -p "$(dirname "$exclude")"; echo "/$rel/" >>"$exclude"
+    echo "Added /$rel/ to $exclude"
+}
 
 case $ACTION in
 install)
     command -v crontab >/dev/null || { echo 'crontab not found: install cron' >&2; exit 1; }
     command -v claude >/dev/null || { echo 'claude not found in PATH' >&2; exit 1; }
-    rel=$(profile jobs_state .dev-cycle/jobs/); rel=${rel%/}
-    if ! git -C "$REPO" check-ignore -q -- "$rel/$JOB/ledger.md"; then
-        exclude=$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)/info/exclude
-        mkdir -p "$(dirname "$exclude")"; echo "/$rel/" >>"$exclude"
-        echo "Added /$rel/ to $exclude"
-    fi
+    ensure_ignored
     mkdir -p "$JOBS_HOME"
     [ "$SELF" = "$STABLE" ] || { cp "$SELF" "$STABLE.new" && chmod +x "$STABLE.new" && mv "$STABLE.new" "$STABLE"; }
 
     tag="# dev-cycle:$repoName $JOB"
     mine=$(cron_lines | grep -F " $tag" | head -n1 | sed 's/^#paused# //') || true
-    wm= wh=
-    if [ -n "$mine" ]; then read -r wm wh _ <<<"$mine"; wm=${wm%%,*}; wh=${wh%%,*}; fi   # was: minute, hour ('*' for workers)
-    if [[ $JOB == collect-* ]]; then
-        if [ "$HOUR" -lt 0 ]; then
-            if [[ $wh =~ ^[0-9]+$ ]]; then HOUR=$wh; else HOUR=$([ "$JOB" = collect-issues ] && echo 0 || echo 3); fi   # 3 hours apart
-        fi
-        [ "$MINUTE" -ge 0 ] || MINUTE=${wm:-0}
-        MINUTE=$((MINUTE % 60)); HOUR=$((HOUR % 6))
-        sched="$MINUTE $HOUR,$((HOUR + 6)),$((HOUR + 12)),$((HOUR + 18)) * * *"
+    every= wm= wh=
+    if [ -n "$EVERY" ]; then every=$(minutes "$EVERY")   # a new interval resets the offset
+    elif [ -n "$mine" ]; then                            # reinstall: keep the interval and the offset
+        read -r mf hf _ <<<"$mine"; wm=${mf%%,*}; wh=${hf%%,*}
+        if [[ $mf == *,* ]]; then c=${mf//[^,]/}; every=$((60 / (${#c} + 1)))
+        elif [ "$hf" = '*' ]; then every=60
+        else c=${hf//[^,]/}; every=$((1440 / (${#c} + 1))); fi
+    elif [[ $JOB == collect-* ]]; then every=360; else every=30; fi
+    if [[ $JOB == collect-* ]]; then   # collectors: half an interval apart
+        off=0; [ "$JOB" != collect-backlog ] || off=$((every / 2)); dm=$((off % 60)); dh=$((off / 60))
+    else                               # workers: spread over the half hour, pairs 15 min apart
+        n=$(cron_lines | grep -vF " $tag" | grep -vcE ' collect-[a-z]+$') || n=0
+        dm=$(( (7 + 15 * n + 5 * (n / 2)) % 30 )); dh=0
+    fi
+    [ "$MINUTE" -ge 0 ] || MINUTE=${wm:-$dm}
+    [ "$HOUR" -ge 0 ] || { if [[ $wh =~ ^[0-9]+$ ]]; then HOUR=$wh; else HOUR=$dh; fi; }
+    list=
+    if [ "$every" -lt 60 ]; then
+        MINUTE=$((MINUTE % every)); for ((i = MINUTE; i < 60; i += every)); do list+=${list:+,}$i; done
+        sched="$list * * * *"
     else
-        if [ "$MINUTE" -lt 0 ]; then
-            if [ -n "$wm" ]; then MINUTE=$wm
-            else
-                n=$(cron_lines | grep -vF " $tag" | grep -vcE ' collect-[a-z]+$') || n=0
-                MINUTE=$(( (7 + 15 * n + 5 * (n / 2)) % 30 ))   # pairs 15 min apart
-            fi
-        fi
-        MINUTE=$((MINUTE % 30)); sched="$MINUTE,$((MINUTE + 30)) * * * *"
+        step=$((every / 60)); MINUTE=$((MINUTE % 60)); HOUR=$((HOUR % step))
+        if [ "$step" -eq 1 ]; then list='*'; else for ((i = HOUR; i < 24; i += step)); do list+=${list:+,}$i; done; fi
+        sched="$MINUTE $list * * *"
     fi
     # cron runs with a bare environment and a ~1000-char line limit: bake in a short PATH (claude's
     # dir, which also holds node for npm installs, plus the usual tool dirs).
     cpath=$(dirname "$(command -v claude)"):/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
-    line="$sched cd $(q "$REPO") && PATH=$(q "$cpath") $(q "$STABLE") run $JOB --repo $(q "$REPO") --model $(q "$MODEL") >/dev/null 2>&1 $tag"
+    line="$sched cd $(q "$REPO") && PATH=$(q "$cpath") $(q "$STABLE") run $JOB --repo $(q "$REPO")$pin >/dev/null 2>&1 $tag"
     case $line in *%*) echo 'the path to the repository or PATH contains "%", which cron cannot take' >&2; exit 1 ;; esac
     cron_edit add "$repoName" "$JOB" "$line"
-    echo "$repoName $JOB: cron '$sched'; state $stateRoot/$JOB"
+    echo "$repoName $JOB: every $every min, cron '$sched'; $MODEL, $EFFORT; state $stateRoot/$JOB"
     ;;
 uninstall|pause|resume)
     for j in "${targets[@]}"; do
@@ -149,6 +190,7 @@ status)
     ;;
 run)
     state=$stateRoot/$JOB
+    ensure_ignored >/dev/null
     mkdir -p "$state/reports" "$state/logs" "$state/patches"
     ledger=$state/ledger.md
     [ -f "$ledger" ] || printf '| stamp | item | status | branch | commit | report |\n| --- | --- | --- | --- | --- | --- |\n' >"$ledger"
@@ -190,6 +232,7 @@ Stop and wrap up by: $(iso $((deadline - WRAPUP)))
 Hard deadline: $(iso "$deadline") (the process group is killed then)
 Mode: $([ "$DRY" = 1 ] && echo 'DRY RUN' || echo FULL)
 Model: $MODEL
+Effort: $EFFORT
 Platform: $(uname -s)
 Repository (main checkout, operator's tree): $REPO
 State directory: $state
@@ -200,7 +243,7 @@ dev-cycle plugin root: $root
 
 EOF
         cat "$root/agent-jobs/common.md"; echo
-        awk 'f { print } /<!-- job -->/ { f = 1 }' "$root/skills/$JOB/SKILL.md"
+        cat "$root/agent-jobs/jobs/$JOB.md"
         [ -z "$notes" ] || { printf '\n# Project job notes (%s)\n\n' "$notesRel"; cat "$notes"; }
     } >"$promptFile"
     log=$state/logs/$stamp.jsonl
@@ -208,7 +251,7 @@ EOF
 
     cd "$REPO"
     set -m   # own process group, so the deadline kills the whole agent tree
-    claude -p --model "$MODEL" --permission-mode bypassPermissions --output-format stream-json --verbose \
+    claude -p --model "$MODEL" --effort "$EFFORT" --permission-mode bypassPermissions --output-format stream-json --verbose \
         <"$promptFile" >"$log" 2>"$err" &
     pid=$!
     set +m

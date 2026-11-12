@@ -7,8 +7,9 @@ description: >-
   task sequence and frontmatter, proposes topics when none is chosen. Use when asked to form,
   draft, detail or refine a task ("draft task T05", "detail T05", "what task next",
   «сформируй задание», «детализируй T05», «выдели подзадачи для субагентов»).
-argument-hint: "[TNN|all] [draft|detail|slices|validation|all]"
+argument-hint: "[TNN|all] [draft|detail|slices|validation|all]…"
 disable-model-invocation: true
+user-invocable: false
 metadata:
   contract: ../task-layout/SKILL.md
 ---
@@ -22,6 +23,7 @@ profile: [`task-layout`](../task-layout/SKILL.md). File structure:
 
 Arguments (`$ARGUMENTS` in Claude Code, request text in Codex): a task ID or `all` (every
 formed task of the bundle) and a pass. No ID → phase 0 proposes topics. No pass → `all`.
+Several passes (`detail slices`) run in that order in one context, so the code is read once.
 
 ## Passes
 
@@ -59,18 +61,23 @@ headings a bundle already uses.
 6. **Access up front.** For every operation, command and UI element: who may, which
    permission, behaviour on denial.
 7. **Subagent-ready explicit.** Atomic steps with small context and their own check get
-   `SNN`; none → say so.
+   `SNN`; none → say so. Each item says whether it can run in parallel with the others.
 8. **Subagents make no architectural decisions.** Delegate mechanical steps: tests for a ready
    criterion, one repository method, path checks, evidence packs. Never what needs the whole
    document or changes scope, contract or schema.
 9. **Minimal sufficiency.** Groundwork "for later" only when the task cannot work without it.
+10. **One task, one context.** A task is sized so that one developer finishes it in one
+    context ([unit size](../task-layout/references/roles-and-models.md#unit-size)). A task
+    that outgrows that is split in the sequence, not squeezed into more `SNN` items.
 
 ## Phase 0. Status map and topic choice
 
 Read the root `AGENTS.md` with its profile, the domain `README.md`, then the bundle's
 `02-task-sequence.md`. Classify files per the layout contract.
 
-Status map: `ID | file | status | blocked_by | ready/blocked | out-of-scope items`. Readiness
+Status map: `ID | file | status | blocked_by | ready/blocked | out-of-scope items`.
+`bash ../task-layout/scripts/bundle-status.sh <bundle>` (the path is relative to this file;
+on Windows in Git Bash, which is the Bash tool of Claude Code) prints all columns but the last; add the out-of-scope items from the done tasks. Readiness
 comes from `blocked_by`/`Depends on`, never from file numbers. Compare with code: a `_DONE`
 task without implementation and a formed task whose result already ships are discrepancies.
 
@@ -102,12 +109,25 @@ missing / create / extend" goes into "Current base and dependencies".
 Walk "Out of scope" of the bundle's done tasks; decide per item: include, keep out, include
 partially — with reason and link. Do not re-list what already ships.
 
+**Unit-size check, at the end of `detail`.** The task changes more than one layer with
+separate verification, more than five files, or needs more than one long verification loop → write a
+split proposal (the cut line, what each part delivers, its dependencies) under Open questions
+and in the reply. New `TNN` are allocated by `plan-feature` in the sequence, never here.
+
 ## Phase 5. Subagent-ready
 
 Mark a step `SNN` only when: one clear result (patch, evidence, command output); 3–7 files of
 context; inputs already stated in the document; no product or architecture decisions; local
 verification. Format in the template. No candidates → "None: the task needs one owner and the
 whole context."
+
+Look for the items that shorten the developer's path: tests for a criterion whose contract
+is already fixed, one repository method, one adapter behind a ready interface, a fixture, an
+evidence pack, a doc update. For each item fill `Allowed changes` with exact paths and
+`Parallel`: `yes` when its paths overlap no other item and its check runs on its own paths
+without shared state (no migrations, lockfiles, generated registries, shared database);
+otherwise `after Sxx` or `after <plan step>`. Items that are `yes` run at the same time, so
+an overlap missed here becomes a conflict there.
 
 ## Phase 6. Write the file
 
@@ -116,6 +136,10 @@ contract: `id`, `status: formed`, `blocked_by`, `blocks` required; `milestone`, 
 optional; `assigned_to` only with more than one contributor. Sections per the template; empty
 ones are omitted or say "Not required" with a reason. Then update the task row in
 `02-task-sequence.md` with the exact path.
+
+In a parallel wave (the brief says `do not commit: the parent commits`) write only your task
+file. Return any change `02-task-sequence.md` needs as exact row text in the reply; the
+coordinator applies it and commits.
 
 Checklist: ID and path match the sequence; `blocked_by` = `Depends on`; no duplicate of a
 formed file; every contract has a data flow and an access rule; every criterion has a test or
@@ -130,7 +154,22 @@ File path; 3–5 line summary (name, bundle, in scope, deferred); the hand-over 
 Implement the task in <path>. Meet every acceptance criterion and test.
 ```
 
-Never paste the full task into the chat. Commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene) and name the branch.
+Never paste the full task into the chat. Commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene) and name the branch;
+in a parallel wave the coordinator commits, so list your changed file instead.
+
+## Delegation
+
+When, how deep, which model and the brief format:
+[delegation](../task-layout/references/roles-and-models.md). Your fan-out points are
+read-only: predecessor commits and diffs (phase 2; these need `git`, so a general-purpose
+helper with `SCOPE read-only`), and the card-versus-repository check per layer (phase 3; a
+researcher) when the task spans several layers. Start them in one message. The document
+itself has one writer: you.
+
+An architecture question that spans several domains and that the workflow does not decide:
+record it under Open decisions with its options, and return `needs consilium: <question> ·
+<domains> · <evidence paths>`. Only the main conversation convenes a
+[`consilium`](../consilium/SKILL.md).
 
 ## Anti-patterns
 

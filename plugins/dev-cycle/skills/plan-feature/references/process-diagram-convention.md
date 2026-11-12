@@ -1,11 +1,9 @@
 # Process diagram convention
 
-Every process map in this repository is a Mermaid `flowchart TD` block drawn with one fixed vocabulary:
+Every process map in a bundle is a Mermaid `flowchart TD` block drawn with one fixed vocabulary:
 eight semantic node classes, a fixed palette, and edge labels that mean different things depending on
 what the edge leaves. The point of fixing it is that a reader who has decoded one diagram has decoded
 all of them, and an author never has to invent a colour.
-
-Every block follows the same legend, so a reader who has decoded one map has decoded all.
 
 ## The vocabulary
 
@@ -13,10 +11,10 @@ Eight classes, and nothing else. The class carries the meaning; the shape reinfo
 
 | Class | Shape | Colour | Means |
 | --- | --- | --- | --- |
-| `proc` | rectangle | blue | Coordinator process: what the coordinator session itself does |
-| `work` | rectangle | teal | Worker process: an in-session subagent, or a queue task in its own process |
-| `auto` | rectangle | violet | Automation element: hook, script, commit broker, schedule |
-| `store` | rectangle | grey | State store: event log, cache, mission file |
+| `proc` | rectangle | blue | Main process: what the actor or service the diagram is about does itself |
+| `work` | rectangle | teal | Worker process: work handed to another process, such as a background job or a queue consumer |
+| `auto` | rectangle | violet | Automation element: hook, script, scheduler, trigger |
+| `store` | rectangle | grey | State store: table, file, queue, cache, event log |
 | `evt` | stadium | green | Event |
 | `io` | stadium | steel grey | Part joint: the exit of one part and the entry of the next |
 | `stop` | stadium | red | Terminal event: pause, refusal, premature exit |
@@ -27,8 +25,8 @@ always a *state reached* and its colour says whether the flow continues, joins a
 
 ## The palette
 
-Copy the block verbatim. Declare only the classes the diagram actually uses — that is why no two
-diagrams in the chain carry the same `classDef` list — and never restyle a single node with `style`.
+Copy the block verbatim. Declare only the classes the diagram actually uses, and never restyle a
+single node with `style`.
 
 ```text
 classDef proc fill:#E8F1FB,stroke:#2C5F8A,stroke-width:1.2px,color:#12293D
@@ -47,15 +45,14 @@ joints are the two things a reader scans for, so they carry the heaviest outline
 ## The rendered legend
 
 The vocabulary drawn in its own terms, including the two sample edges. This block is the legend for
-every process map in the repository; render it next to a diagram whose reader has not seen the
-convention before.
+every process map; render it next to a diagram whose reader has not seen the convention before.
 
 ```mermaid
 flowchart TD
 
-L1["Coordinator process"]
-L2["Worker process or subagent"]
-L3["Automation: hook, script, broker, schedule"]
+L1["Main process"]
+L2["Worker process"]
+L3["Automation: hook, script, scheduler, trigger"]
 L4["State store"]
 L5("Event")
 L6("Part joint")
@@ -91,9 +88,9 @@ class L8,LB gate
   breaks the parse on the first `:`.
 - `<br/>` for line breaks. Prefer two or three short lines over one long one; a node wider than the
   gate above it forces the whole graph sideways.
-- Name the real thing. A node says `mission.ps1 init -Mission ID`, `heartbeat.ps1: Stop, timeout
-  600 s`, `.harness/missions/MISSION/events.jsonl` — the command, the file, the timeout, verbatim as
-  the code spells it. A node that says "runs the script" is a node that will silently go stale.
+- Name the real thing. A node says `POST /invoices/{id}/void`, `billing-worker: retry, timeout
+  600 s`, `invoices.status = 'void'` — the operation, the job, the timeout, the column, verbatim as
+  the code spells it. A node that says "calls the service" is a node that will silently go stale.
 - A gate label is a question with a `?`. If the question cannot be answered from state the diagram
   has already produced, the gate is in the wrong place.
 
@@ -108,14 +105,14 @@ The label's meaning follows from what the edge *leaves*:
 | Unlabelled `-->` | Nothing to carry: an unconditional handover, e.g. `IO1 --> G1`, `E1 --> P1` |
 | Dashed `-.->` | A data link with no transfer of control |
 
-Rules that hold across the chain:
+Rules:
 
 - Every branch of every gate is drawn and labelled. A gate with an undrawn branch is a lie about the
   flow, not an omission. Branches fan out on the condition in the reader's terms, not on the boolean:
-  `G1 -->|"no, the answer changes the work"| P1` and `G1 -->|"file not copied from
-  settings.example.json"| P2` beat a pair of edges labelled `false` and `true`.
-- The one dashed edge in the chain is `H7 -.->|"read without an open session"| H8`: the cache is read
-  by something no session started. Reach for `-.->` only for that shape of fact.
+  `G1 -->|"invoice already paid"| P1` and `G1 -->|"no permission to void"| P2` beat a pair of edges
+  labelled `false` and `true`.
+- A dashed edge is rare. Example: `H7 -.->|"read by the nightly report"| H8`: the store is read by
+  something this flow never starts. Reach for `-.->` only for that shape of fact.
 
 ## Splitting a document into parts
 
@@ -123,15 +120,13 @@ One diagram per part; one part per section. Parts are chained by their process i
 **the exit event of one part is the entry event of the next**.
 
 - The document opens with a parts map: a table of `part | input | output`, one row per diagram. It is
-  the only place a reader can see the whole chain at once, and it is what makes eleven separate
+  the only place a reader can see the whole chain at once, and it is what makes several separate
   diagrams one document.
 - A part that continues the chain opens with an `io` node labelled `In: …` and closes with an `io`
-  node labelled `Out: …`, whose text repeats the parts-map row. In the chain these are `IO1` and
-  `IO2`.
-- A part that has no upstream or no downstream carries no `io` nodes. Part 1 of the chain starts at a
-  user request and ends at a state of the session; part 5 is a fan of independent
-  trigger → automation chains sharing one `store`. Both are boundary parts, and forcing a joint onto
-  them would invent a predecessor that does not exist.
+  node labelled `Out: …`, whose text repeats the parts-map row.
+- A part that has no upstream or no downstream carries no `io` nodes: a part that starts at a user
+  request, or a fan of independent trigger → automation chains sharing one `store`. These are
+  boundary parts, and forcing a joint onto them would invent a predecessor that does not exist.
 - Parts are separated by `---`.
 
 ## Layout inside a block
@@ -157,16 +152,16 @@ group the edges the same way, so the groups read as the independent chains they 
 ## Node ids
 
 Ids are a local reading aid, not part of the convention: they are re-used from part to part and mean
-nothing across diagrams. The habit is `E` for events, `P` for coordinator processes, `H` for
-automation, `G` for gates, `IO` for joints, `S`/`LOG` for stores, `W` for workers — but the chain
-itself breaks it, assigning `P5`–`P11` to `auto` and `P9`, `P12` to `work`. **Read the `class` lines,
-never the prefix.** Keeping ids short and dense is worth more than keeping them systematic.
+nothing across diagrams. The habit is `E` for events, `P` for main processes, `H` for
+automation, `G` for gates, `IO` for joints, `S`/`LOG` for stores, `W` for workers, and it is only a
+habit. **Read the `class` lines, never the prefix.** Keeping ids short and dense is worth more than
+keeping them systematic.
 
 ## The prose around a diagram
 
-A part is a diagram plus a short prose block — in the chain, "What matters in this part". The diagram
+A part is a diagram plus a short prose block, for example "What matters in this part". The diagram
 carries the flow; the prose carries what a box cannot: why a timeout is what it is, what the previous
-design got wrong, which file is the single writer of a cache, which two tables are editorial opinion.
+design got wrong, which service is the single writer of a table.
 Prose cites `path:line`. If a fact fits in a node, it belongs in the node, not in the prose.
 
 ## Checklist before committing a diagram

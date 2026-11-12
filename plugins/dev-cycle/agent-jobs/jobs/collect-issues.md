@@ -1,47 +1,3 @@
----
-name: collect-issues
-description: >-
-  Scheduled unattended agent that walks the repository's documents, job reports and code
-  markers for notes about remaining problems, checks that each problem still exists, and
-  adds the untracked ones to the project's known-issues file on a rolling branch that
-  autodebug also reads. Install, dry-run, pause, resume, check or remove the scheduler job (Windows Task Scheduler,
-  cron on Linux and macOS) for the current repository. Use when asked to set up or manage automatic
-  known-issue collection («сборщик known issues», «поставь collect-issues»,
-  "schedule collect-issues").
-argument-hint: "install [-Hour N | --hour N] | dry-run | status | pause | resume | uninstall"
-disable-model-invocation: true
-metadata:
-  contract: ../task-layout/SKILL.md
----
-
-# Collect issues
-
-Every 6 hours (by default at 00:00, 06:00, 12:00, 18:00) a headless Claude Code agent reads
-what changed since its last run, finds notes about problems that remain, verifies them in
-code, and records the untracked ones in the `known_issues` file on the branch
-`collect/known-issues`. `autodebug` reads that branch too, so a collected item can be fixed
-before the owner merges it. Rules shared with the other jobs:
-[`../../agent-jobs/common.md`](../../agent-jobs/common.md).
-
-## Operator
-
-Run from the target repository root; `<plugin>` is this plugin's root (two levels above
-this file). The job runs Claude Code. Windows uses `agent-job.ps1` (PowerShell 7, Task
-Scheduler); Linux and macOS use `agent-job.sh` (bash, cron) with `--minute N`, `--hour N`,
-`--dry-run` instead of `-Minute N`, `-Hour N`, `-DryRun`.
-
-| Argument | Windows | Linux, macOS |
-| --- | --- | --- |
-| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job collect-issues [-Hour N]` | `<plugin>/agent-jobs/agent-job.sh install collect-issues [--hour N]` |
-| `dry-run` | `... -Action run -Job collect-issues -DryRun` | `... run collect-issues --dry-run` (candidates only; run in the background) |
-| `status` | `... -Action status` | `... status` |
-| `pause` / `resume` | `... -Action pause -Job collect-issues` / `-Action resume -Job collect-issues` | `... pause collect-issues` / `... resume collect-issues` |
-| `uninstall` | `... -Action uninstall -Job collect-issues` | `... uninstall collect-issues` (state and branch stay) |
-
-Before `install`, the profile (`## Dev cycle` in `AGENTS.md`) must name `known_issues`.
-
-<!-- job -->
-
 ## Job: collect untracked problems into the known-issues file
 
 A known issue is a defect, regression, broken or missing guarantee, unsafe behaviour or
@@ -82,7 +38,7 @@ What to look for:
   collector branch, closed items in its history, and both ledgers of `autodebug`.
 - Still real: read the current code on `wip_branch`; confirm the problem exists. Gone or
   fixed → verdict `fixed`. Replaced concept → `outdated` (the freshness check of
-  `../autobacklog/SKILL.md` applies).
+  `agent-jobs/jobs/autobacklog.md` (under the plugin root of the header) applies).
 - A defect, not planned work → otherwise `not-an-issue` (hand planned work to
   `collect-backlog` by leaving it alone).
 - Record every judged note in `seen.md` with its verdict.

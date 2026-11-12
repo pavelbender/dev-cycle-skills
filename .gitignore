@@ -1,2 +1,7 @@
 .DS_Store
 *.swp
+
+# Verbatim copies of Anthropic documentation pages: local reference only, not ours to
+# publish under this repository's license. docs/anthropic/README.md says how to fetch them.
+docs/anthropic/*.md
+!docs/anthropic/README.md

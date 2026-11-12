@@ -1,50 +1,3 @@
----
-name: autobacklog
-description: >-
-  Scheduled unattended agent that advances one backlog item per run: checks that the item is
-  still current, then implements, validates or reconciles it on its own branch, running new
-  features through the dev cycle across several runs; never merges. Install, dry-run, pause,
-  resume, check or remove the scheduler job (Windows Task Scheduler, cron on Linux and macOS) for the current repository. Use when
-  asked to set up or manage automatic backlog work («автобэклог», «поставь autobacklog»,
-  "schedule autobacklog").
-argument-hint: "install [-Minute N | --minute N] | dry-run | status | pause | resume | uninstall"
-disable-model-invocation: true
-metadata:
-  contract: ../task-layout/SKILL.md
----
-
-# Autobacklog
-
-Every 30 minutes a headless Claude Code agent picks one backlog item that needs no owner
-decision, proves it is still current, and advances it in a worktree on its own branch:
-a task with tests, a proof or validation, a document reconciliation, or a new feature
-through `cycle`. Unfinished bundles continue in later runs. The owner reviews the reports
-and merges the branches. Rules shared with `autodebug`:
-[`../../agent-jobs/common.md`](../../agent-jobs/common.md).
-
-## Operator
-
-Run from the target repository root; `<plugin>` is this plugin's root (two levels above
-this file). The job runs Claude Code. Windows uses `agent-job.ps1` (PowerShell 7, Task
-Scheduler); Linux and macOS use `agent-job.sh` (bash, cron) with `--minute N`, `--hour N`,
-`--dry-run` instead of `-Minute N`, `-Hour N`, `-DryRun`.
-
-| Argument | Windows | Linux, macOS |
-| --- | --- | --- |
-| `install` | `pwsh -NoProfile -File <plugin>/agent-jobs/agent-job.ps1 -Action install -Job autobacklog [-Minute N]` | `<plugin>/agent-jobs/agent-job.sh install autobacklog [--minute N]` |
-| `dry-run` | `... -Action run -Job autobacklog -DryRun` | `... run autobacklog --dry-run` (selection only, 10–30 min; run in the background) |
-| `status` | `... -Action status` | `... status` |
-| `pause` / `resume` | `... -Action pause -Job autobacklog` / `-Action resume -Job autobacklog` | `... pause autobacklog` / `... resume autobacklog` |
-| `uninstall` | `... -Action uninstall -Job autobacklog` | `... uninstall autobacklog` (state and branches stay) |
-
-Before `install`, check the profile (`## Dev cycle` in `AGENTS.md`): `format`, `lint`,
-`test` must exist; `backlog` names the routing index if the project keeps one (otherwise
-the job scans bundles under `tasks_root`). Offer `jobs_state` and `job_notes` (see
-`task-layout`) when the project has live environments, stands or items the job must skip.
-After `install`, suggest a `dry-run` and read its report with the user.
-
-<!-- job -->
-
 ## Job: advance one backlog item
 
 Never spend a run on work that is out of date. Proving that a candidate is outdated and
@@ -132,6 +85,9 @@ bundle path and `--no-stop`. Unattended overrides of its gates:
 - Branches: the profile's `bundle_branch` is this run's branch; task branches and worktrees
   from `run-bundle` follow the profile. Merge task branches only into the bundle branch,
   never into `wip_branch`: that gate is the owner's.
+- Execution: start `run-bundle` in mode `sequential` unless the notes allow parallel
+  batches. The machine is shared with the operator and the other jobs, and a parallel batch
+  sets up several worktrees at once.
 - Remove every worktree you created, task worktrees included. Status `in-progress` while
   stages remain, `done` when execution is complete on the bundle branch.
 

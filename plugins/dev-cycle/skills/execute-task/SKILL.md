@@ -6,6 +6,8 @@ description: >-
   implement, execute or carry out a task file ("implement task", "execute T05", «реализуй
   задачу из», «выполни задание», «сделай T05»).
 argument-hint: "<task-file-path>"
+disable-model-invocation: true
+user-invocable: false
 metadata:
   contract: ../task-layout/SKILL.md
 ---
@@ -44,8 +46,9 @@ matrices) in compact English. Identifiers, paths, commands and error text verbat
   migrations, schemas, tests, docs layout.
 - **Docs are part of the result.** Behaviour changed → update workflow, decision records,
   local `AGENTS.md`, `02-task-sequence.md`.
-- **One writer per tree.** Subagents only for read-only research and isolated checks; edits
-  single-threaded. Parallel work happens in separate worktrees (`run-bundle`).
+- **One committer per tree: you.** Helpers do read-only research, isolated checks and the
+  task's `SNN` items ([Delegation](#delegation)). Your own edits are single-threaded. Whole
+  tasks run in parallel only in separate worktrees (`run-bundle`).
 
 ## Phase 1. Read the task, state the goal, plan
 
@@ -55,7 +58,8 @@ tests, documentation invariants, `blocked_by`.
 Readiness: every code in `blocked_by` is `done`/`validated` (or `_DONE`/`_VAL`) or explicitly
 accepted as an existing contract. Blocked → stop and report what blocks.
 
-Restate the goal in 2–4 sentences. Ambiguous → ask before the first edit.
+Restate the goal in 2–4 sentences. Ambiguous → ask before the first edit. As a subagent you
+cannot ask: do the parts the question does not block, and return the question in your report.
 
 Checklist: drift check → architecture read → implement → tests → criteria check → fixes →
 re-check → format/lint/tests/smoke → docs → status and rename.
@@ -63,14 +67,15 @@ re-check → format/lint/tests/smoke → docs → status and rename.
 ## Phase 2. Compare the task with current code
 
 For every task element find the real state. Use a code graph or language server when the
-project has one; text search for literals, configs, docs and gaps.
+project has one; text search for literals, configs, docs and gaps. Send independent lookups
+in one message so they run at the same time.
 
 | Drift | Signal | Action |
 | --- | --- | --- |
 | Already done | code satisfies the item | no duplicate edit; go to criteria check |
 | Partly done | some pieces exist | fill gaps, reuse |
 | Done differently | same behaviour, other path/name/signature | use the real name, record drift |
-| Code moved ahead | task contradicts current architecture | **stop**: list files and lines, propose a plan, get confirmation, update the task file |
+| Code moved ahead | task contradicts current architecture | **stop**: list files and lines, propose a plan, get confirmation, update the task file; as a subagent return `Task needs replanning` with that list instead of asking |
 | No drift | task matches the baseline | continue |
 
 Minor drift: record and continue with real names.
@@ -93,6 +98,11 @@ tests → docs. A vertical slice with one test before broad edits.
   them.
 - One acceptance criterion → one test where practical.
 - Minimal diff; no whole-file rewrites without need.
+- `SNN` items: do the contract and anything they depend on first, then hand the items to
+  slice helpers ([Delegation](#delegation)) while you continue with the rest.
+- The task turns out much bigger than its file says (many more files, several long
+  verification loops): finish and commit a coherent part, then return `partial` with the list
+  of what is left. A half-done task in one overloaded context is worse than two clean ones.
 
 ## Phase 5. Check every criterion
 
@@ -138,14 +148,30 @@ command and output. Classify: implementation bug, stale test, stale task, enviro
 4. Benign drift reflected in the task.
 5. Residual risks and what was not checked.
 6. Branch, commits, worktree path; the branch to merge unless the caller merges it.
+7. Questions and `needs consilium` items; `partial` with what is left, when unfinished.
+
+Write it per [Reports](../task-layout/SKILL.md#reports).
 
 ## Delegation
 
-A subagent pays off when the subtask is independent and would otherwise flood the context
-(search, logs, test runs), or can run in parallel. Do not delegate what needs most of your
-context or frequent back-and-forth. Brief: goal, exact files, forbidden actions, done
-criterion, return format, budget, and the profile's `boundaries` line if set. Role, model and
-effort per [roles and models](../task-layout/references/roles-and-models.md) (usually researcher, light tier).
+When, how deep, which model and the brief format:
+[delegation](../task-layout/references/roles-and-models.md). Your fan-out points:
+
+- **Lookups and evidence** (phases 2–3): a researcher for a broad search or a large read you
+  need only the conclusion of. A lookup whose target you know is a direct search.
+- **Noisy runs** (phase 7): a helper runs a long suite and returns only the failures with
+  their output.
+- **`SNN` items** (phase 4): one slice helper per item, briefed from the item's row: context
+  files, allowed changes, result, check. Items with `Parallel: yes` start in one message;
+  the others wait for the item or plan step their `Parallel` cell names (`after S01`). Helpers
+  do not commit. You review each patch, run
+  `format`, `lint` and the tests over the whole change, and commit.
+- No Agent tool, or the brief says "no helpers": do these steps yourself, in order.
+
+A design question the task file does not decide and that spans several domains: return
+`needs consilium: <question> · <domains> · <evidence paths>` and go on with the work that
+does not depend on it. Only the main conversation convenes a
+[`consilium`](../consilium/SKILL.md); when that is you, its three conditions decide.
 
 ## Anti-patterns
 

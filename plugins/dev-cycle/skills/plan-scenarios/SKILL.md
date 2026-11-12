@@ -7,6 +7,8 @@ description: >-
   Use when a request is about screens, pages, consoles, CLI flows, prompts or user stories
   («спланируй сценарии», «как пользователь будет…», «опиши экраны консоли», "user scenarios").
 argument-hint: "<feature or screen>"
+disable-model-invocation: true
+user-invocable: false
 metadata:
   contract: ../task-layout/SKILL.md
 ---

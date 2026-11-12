@@ -8,6 +8,7 @@ description: >-
   "tidy docs folder").
 argument-hint: "<folder-path> [goal]"
 disable-model-invocation: true
+user-invocable: false
 metadata:
   contract: ../task-layout/SKILL.md
 ---
