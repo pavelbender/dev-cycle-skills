@@ -114,13 +114,14 @@ What that gives you:
 
 ## Commands
 
-Four commands. Everything else runs through them.
+Five commands. Everything else runs through them.
 
 | Command | What it does |
 | --- | --- |
 | `/dev-cycle:cycle <intent or bundle path>` | drives a feature through the stages, or runs one stage |
 | `/dev-cycle:fix <bug report>` | fixes a bug by the shortest path its cause allows |
 | `/dev-cycle:consilium <question>` | seats 4–5 role agents on one hard cross-domain question |
+| `/dev-cycle:probe-paths [focus]` | probes a live stand for dead ends, missing reverse actions and role/permission holes; records, fixes nothing |
 | `/dev-cycle:automation install` | sets up the scheduled agents for the current repository |
 
 In Codex the prefix is `$`: `$dev-cycle:cycle <intent or bundle path>`.
@@ -401,7 +402,7 @@ Without the plugin system, `scripts/install.sh` links the skills into a skills d
 
 ```text
 plugins/dev-cycle/
-  skills/          cycle, fix, consilium, automation; the stage skills; the two contracts
+  skills/          cycle, fix, consilium, probe-paths, automation; the stage skills; the two contracts
   agents/          researcher and consilium-member: read-only agent types (Claude Code)
   agent-jobs/      the runner for scheduled agents (sh, ps1), common rules, one file per job
   assets/          the icon

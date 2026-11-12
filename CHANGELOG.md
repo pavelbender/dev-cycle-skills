@@ -6,6 +6,17 @@ All notable changes to this project are recorded here. The format follows
 minor version may change behaviour; such changes are listed under **Changed** and
 **Removed**, with the steps to take under **Upgrade notes**.
 
+## [Unreleased]
+
+### Added
+
+- **`probe-paths` skill.** One call is one iteration: walks a few not-yet-covered scenarios
+  on a live stand as different roles across every surface (web UI, API, CLI, TUI, local
+  daemon, MCP server), runs subagents on concurrent-use edge cases, and records dead ends,
+  missing reverse actions, UI/API permission mismatches, races and states with no way out.
+  State lives in files, so `/loop` can repeat it. Finds and records only. New profile key
+  `probe_notes`.
+
 ## [0.4.0] - 2026-11-12
 
 The plugin is tuned for Claude Fable 5.2, Opus 5.5, Sonnet 5.5 and Haiku 5.5, and reduced to
