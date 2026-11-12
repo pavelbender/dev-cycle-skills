@@ -6,15 +6,24 @@ description: >-
   suffixes, readiness, language of artifacts, and the project profile the other dev-cycle
   skills read. Use when creating, classifying, renaming or checking task documents, or when
   another dev-cycle skill points here.
+disable-model-invocation: true
+user-invocable: false
 metadata:
   role: contract
 ---
 
 # Task layout contract
 
-Every other skill of this set (`cycle`, `plan-scenarios`, `plan-feature`, `write-task`,
-`execute-task`, `validate-task`, `run-bundle`, `tidy-folder`, `autodebug`, `autobacklog`,
-`collect-issues`, `collect-backlog`) follows this contract. It keeps
+Every other skill of this set (`cycle`, `fix`, `plan-scenarios`, `plan-feature`,
+`write-task`, `execute-task`, `validate-task`, `run-bundle`, `consilium`, `tidy-folder`,
+`automation`) and the four unattended jobs that `automation` schedules (`autodebug`,
+`autobacklog`, `collect-issues`, `collect-backlog`) follow this contract. The user's entries
+are `cycle`, `fix`, `consilium` and `automation`; the stage skills are read by path from
+those.
+[`scripts/bundle-status.sh`](scripts/bundle-status.sh) prints the status map of a bundle from
+the files this contract defines. A skill that hands
+work to a subagent also follows [delegation](references/roles-and-models.md): when to
+delegate, layers, unit size, parallel work, the brief, roles, models and effort. It keeps
 scenarios, workflows, task sequences, implementation tasks and evidence of one feature in one
 group instead of a flat numbered list.
 
@@ -42,7 +51,7 @@ Missing key → default below. A missing command with no default → ask, never 
 - task_heading: "# Task:"                 # heading that marks an implementation task file
 - tracker_key: jira_link                  # optional frontmatter key for a tracker link
 - boundaries: <one line>                  # optional: rule every subagent brief must carry
-- known_issues: docs/known-issues.md      # optional: open defects; fed by collect-issues, worked by autodebug
+- known_issues: docs/known-issues.md      # optional: open defects; fed by collect-issues and fix, worked by autodebug and fix
 - backlog: docs/BACKLOG.md                # optional: routing index of bundles; fed by collect-backlog, worked by autobacklog
 - jobs_state: .dev-cycle/jobs/            # optional: ledgers, reports, logs of the unattended jobs
 - job_notes: docs/agent-jobs.md           # optional: project specifics for unattended jobs
@@ -63,7 +72,7 @@ Missing key → default below. A missing command with no default → ask, never 
 | `backlog` | none: `autobacklog` scans open bundles under `tasks_root`; `collect-backlog` cannot run |
 | `jobs_state` | `.dev-cycle/jobs/`; `install` adds it to `.git/info/exclude` when not ignored |
 | `job_notes` | none: skip lists, live environments, stand ports and branch names for the unattended jobs |
-| `model_notes` | `.dev-cycle/model-notes.md`, never committed; see [roles and models](references/roles-and-models.md) |
+| `model_notes` | `.dev-cycle/model-notes.md`, never committed; see [model notes](references/roles-and-models.md#model-notes) |
 
 Nearest local `AGENTS.md` files override the root one for files under them.
 
@@ -168,6 +177,20 @@ commands, validation matrices — is compact English. Section headings: keep the
 already uses; in a new project use the template names or translate them once. Identifiers,
 paths, commands and error text are verbatim in every language.
 
+## Reports
+
+A report is read by someone who has not seen your tool calls or the files you opened: the
+user switching in from other work, or the agent that briefed you. Write it so it stands on
+its own.
+
+- The outcome first: what is done, what is not, what you need from the reader.
+- Then the evidence: paths, commands with their results, verbatim on failure.
+- Full sentences and plain words. One term for one thing. No label you made up during the
+  work without saying what it is.
+- A list for separate items, prose where the ideas connect.
+- Say what you did not check. A report that claims more than was verified costs the reader a
+  second pass.
+
 ## Readiness
 
 File order does not define execution order. A formed task is **ready** only when its whole
@@ -205,6 +228,9 @@ Every skill that writes files follows this; the user never has to ask for a comm
 - Commit your work and progress in logical commits, in the project's commit convention.
   Never end a turn, stop at a gate or wait for an answer with your changes uncommitted.
   Unfinished work is committed too; the message says what is left. Worktrees included.
+- A worker whose brief says `do not commit: the parent commits` (a slice helper, an agent of
+  a parallel planning wave) leaves its edits unstaged and lists the changed files in its
+  report. The parent commits them.
 - Stage only the files you changed (`git add <paths>`). The tree may hold the user's or
   another agent's uncommitted edits: never `git add -A`, stash, reset or commit them.
 - Merge only within the branch you work in. Merging into `wip_branch`, the default branch or

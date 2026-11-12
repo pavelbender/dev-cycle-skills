@@ -7,6 +7,8 @@ description: >-
   Use when asked to plan, decompose or design a feature, cycle or bundle («спланируй фичу»,
   «разложи на задачи», «нужен план цикла», «workflow и task sequence», "plan feature").
 argument-hint: "<feature or change> [workflow|sequence|all]"
+disable-model-invocation: true
+user-invocable: false
 metadata:
   contract: ../task-layout/SKILL.md
 ---
@@ -22,7 +24,9 @@ umbrella workflow → impact map → dependency graph → small tasks → proof 
 Output: documents in one feature bundle `<tasks_root>/<domain>/<feature-slug>/`:
 `01-workflow.md` (target behaviour and model) and `02-task-sequence.md` (dependency graph
 and task catalogue). Templates: [`references/workflow-template.md`](references/workflow-template.md),
-[`references/task-sequence-template.md`](references/task-sequence-template.md). Layout, IDs,
+[`references/task-sequence-template.md`](references/task-sequence-template.md). A process
+diagram in either document follows
+[`references/process-diagram-convention.md`](references/process-diagram-convention.md). Layout, IDs,
 readiness, project profile: [`task-layout`](../task-layout/SKILL.md).
 Separate task files only on request, via `write-task`.
 
@@ -51,6 +55,9 @@ schema names verbatim.
   several separately verifiable risks.
 - Every task: one outcome, a named checkable deliverable, bounded work areas, dependencies,
   what it unlocks, its own verification.
+- Every task fits one developer in one context
+  ([unit size](../task-layout/references/roles-and-models.md#unit-size)): small tasks run in
+  parallel worktrees and fail cheaply; a big one runs alone and loses detail.
 - Decompose by dependencies: model and invariants → contracts → logic → delivery → UI →
   integration. Not by directory names.
 - No abstract "for later" surfaces in the first milestone: `Future tasks`.
@@ -101,6 +108,12 @@ server when the project has one; docs and literals via search.
 Do not read the whole repository. Every claim in the plan has a source: code, document, test or
 an explicitly marked new decision.
 
+When the feature touches several layers, the rows of the table are independent questions:
+give each to a read-only researcher and start them in one message
+([delegation](../task-layout/references/roles-and-models.md)). Each returns the answer with
+paths and lines. A row that needs `git log` or another command goes to a general-purpose
+helper with `SCOPE read-only`. The plan itself has one writer: you.
+
 ## Phase 2. Target workflow
 
 Create or update `01-workflow.md` per the template. Happy path from action to durable result;
@@ -126,6 +139,13 @@ one-off backfill, no legacy bridge), artefact ownership, trust and checksums, ro
 repeated runs. Open questions short, each marked with what it blocks: the whole plan, one
 task, or the future.
 
+An unresolved architecture decision that spans several domains and blocks the plan goes up
+the ladder of [hard questions](../task-layout/references/roles-and-models.md#hard-questions)
+before it becomes an owner question: the advisor first; when that does not settle it, a
+[`consilium`](../consilium/SKILL.md) if you are the main conversation, otherwise `needs
+consilium: <question> · <domains> · <evidence paths>` in your report. Product decisions stay
+with the owner.
+
 ## Phase 5. Decomposition
 
 Create or update `02-task-sequence.md`. Atomicity: one checkable goal; a named deliverable;
@@ -133,6 +153,20 @@ bounded work areas; no decisions hidden in a future task; explicit dependencies;
 "unlocks"; one small implement-and-verify cycle; no "while we are here". Split by ownership,
 risk, consumer, verification or delivery order; never mechanically, leaving the first task
 with half a contract.
+
+Size and parallelism:
+
+- A task that changes more than one layer with separate verification, more than five files,
+  or needs more than one long verification loop is two tasks. Cut at a contract: the task
+  that fixes the contract first, its consumers after it.
+- Shape the graph wide, not long. After a contract task its consumers (API, job, UI slice,
+  docs) depend on the contract only, not on each other, so they form one wave.
+- Every task card names its `Work areas`: the packages and directories it changes.
+  `run-bundle` runs tasks in parallel only when these are disjoint, so name them exactly.
+- A file several tasks must change (a route table, a registry, the migrations directory) gets
+  one owner task; the others depend on it. Otherwise the wave collapses into a sequence.
+- `Implementation order` lists the waves: which tasks run together and what each wave waits
+  for.
 
 Console UI as small capabilities, each tied to the task that delivers its contract (`model →
 API → UI slice`), not one "frontend" task at the end. A UI task names the exact API operation
@@ -155,8 +189,9 @@ parallel source of truth.
 
 The workflow explains the target flow and is not one task; boundaries separate the first
 milestone from the future; state, permission and ownership invariants explicit; the dependency
-graph is real, not just an order; every task has goal, scope, dependencies, unlocks,
-verification, deliverable; proof points at most every 2–3 tasks; the first batch is a complete
+graph is real, not just an order; every task has goal, scope, work areas, dependencies,
+unlocks, verification, deliverable and fits one context; tasks of one wave have disjoint work
+areas; proof points at most every 2–3 tasks; the first batch is a complete
 useful vertical slice; schemas, ADRs, consumers and docs included where they change; `DONE`
 claims and statements about current behaviour backed by evidence; `git diff --check` clean;
 nothing unresolved presented as fact.

@@ -71,9 +71,10 @@ decision records the task must keep.>
 
 ## Subagent-ready work items
 
-| ID | Where | Why delegate | Context | Allowed changes | Result | Check | Before |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| S01 | Tests | focused test for criterion N without the whole context | `<3–7 files>` | tests only | patch | `<test command>` | implementation |
+| ID | Where | Why delegate | Context | Allowed changes | Result | Check | Before | Parallel |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S01 | Tests | focused test for criterion N without the whole context | `<3–7 files>` | `<exact test paths>` | patch | `<test command on those paths>` | implementation | yes |
+| S02 | Service | one repository method behind the ready contract | `<3–7 files>` | `<exact paths>` | patch | `<test command on those paths>` | adapter | after S01 |
 
 ## Invariants and failure semantics
 
@@ -112,5 +113,6 @@ Inline mark next to the place a delegated step arises:
 > **subagent-ready S01.** Run a subagent for this item and return its result before the next
 > step.
 > **Task:** <one atomic result> · **Context:** <3–7 files> · **Allowed changes:** <paths or
-> "analysis only"> · **Check:** <command> · **Next:** <which step waits for the result>.
+> "analysis only"> · **Check:** <command> · **Next:** <which step waits for the result> ·
+> **Parallel:** <yes | after Sxx>.
 ```
