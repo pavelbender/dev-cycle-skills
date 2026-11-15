@@ -39,6 +39,17 @@ Each pass edits the file in place, keeps earlier content and never renumbers IDs
 set frontmatter `pass:` to the highest pass applied (`draft` < `detail` < `slices` <
 `validation`); `cycle` reads it.
 
+A [leaf task](../task-layout/SKILL.md#proportion) with no hard signal takes `all` in one pass
+and the short form of the template. It still ends at `pass: validation`.
+
+Visual work gets one look criterion: the rendered result at a named phone width and a named
+desktop width, against the design reference. With no reference the measure is the brief, and
+the criterion says that the owner judges the look from the screenshots at acceptance.
+
+Result validity is how a passing check could still be wrong: a test that cannot fail, a
+search that matches nothing. One line per criterion at risk. Negative controls and mutation
+drills only for criteria on a hard-signal path.
+
 ## Language
 
 What the user reads — Goal, Open decisions, Open questions and risks, the chat summary — in the
@@ -55,7 +66,10 @@ headings a bundle already uses.
 3. **Exact paths.** Paths, modules, commands, schema names from the actual repository, never
    copied from the card blindly.
 4. **One criterion, one checkable case.** Verified by one command, test or UI action. "Works
-   correctly" is not a criterion.
+   correctly" is not a criterion. No criterion fixes the exact diff or the exact set of
+   changed files: the cycle's own status, evidence and doc edits change files the task did
+   not list. Check scope as "nothing changed outside the work areas and the bundle's own
+   documents".
 5. **Reuse patterns.** Migrations, repositories, services, fixtures, test layout come from the
    predecessors and the local `AGENTS.md`.
 6. **Access up front.** For every operation, command and UI element: who may, which
@@ -69,6 +83,17 @@ headings a bundle already uses.
 10. **One task, one context.** A task is sized so that one developer finishes it in one
     context ([unit size](../task-layout/references/roles-and-models.md#unit-size)). A task
     that outgrows that is split in the sequence, not squeezed into more `SNN` items.
+11. **Constraints apart from approach.** Write what the result must satisfy into the
+    [binding parts](../task-layout/SKILL.md#proportion). How you would build it (components,
+    composition, order, technique, helper names) goes into the implementation plan, which
+    the developer may leave without an edit. Do not turn your own choice into a constraint.
+12. **Code only for what someone else reads.** A type, schema, signature, wire or file format
+    or migration goes into the task when another task or an outside consumer reads it, as a
+    skeleton without bodies. For anything else ask "who else reads this symbol?" Nobody →
+    describe the outcome and the constraints: no function bodies, view composition, markup
+    or final copy. The developer reads the code and the libraries anyway; an implementation
+    written here is only transcribed, and studied twice. Content facts and approved promises
+    are constraints; the wording is the developer's unless the owner supplied the text.
 
 ## Phase 0. Status map and topic choice
 
@@ -113,6 +138,7 @@ partially — with reason and link. Do not re-list what already ships.
 separate verification, more than five files, or needs more than one long verification loop → write a
 split proposal (the cut line, what each part delivers, its dependencies) under Open questions
 and in the reply. New `TNN` are allocated by `plan-feature` in the sequence, never here.
+Visual work is not split by file count, only when it outgrows one context.
 
 ## Phase 5. Subagent-ready
 
@@ -144,7 +170,8 @@ coordinator applies it and commits.
 Checklist: ID and path match the sequence; `blocked_by` = `Depends on`; no duplicate of a
 formed file; every contract has a data flow and an access rule; every criterion has a test or
 command; every out-of-scope item has reason and link; paths verified; `SNN` atomic and tied
-to a criterion; invariants agree with decision records and schemas.
+to a criterion; invariants agree with decision records and schemas; no code that only this
+task's developer reads; the file is not longer than the change it describes.
 
 ## Phase 7. Reply
 
@@ -176,4 +203,5 @@ record it under Open decisions with its options, and return `needs consilium: <q
 Skipping topic choice when none is given. Picking a task by file number. Continuing a global
 `NN`. Duplicating an existing formed task. Copying the card blindly. Inventing a new pattern
 instead of the accepted one. Marking everything subagent-ready. Leaving a subagent without
-boundaries. Compound criteria. Unnoticed code discrepancies.
+boundaries. Compound criteria. Unnoticed code discrepancies. Writing the implementation into
+the task. Fixing the composition or wording of visual work. A criterion on the exact diff.

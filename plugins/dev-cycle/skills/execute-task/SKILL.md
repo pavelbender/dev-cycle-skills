@@ -40,6 +40,8 @@ matrices) in compact English. Identifiers, paths, commands and error text verbat
 ## Rules
 
 - **Task file is a contract, not a fossil.** Code may have moved on. Find drift before editing.
+  The contract is its [binding parts](../task-layout/SKILL.md#proportion); the implementation
+  plan is a suggestion.
 - **Fact beats document.** Read code and schemas first, then compare with the task text.
   Executable truth (migrations, schemas, tests) beats prose.
 - **Architecture stays intact.** Reuse the package's patterns: repositories, services,
@@ -104,6 +106,27 @@ tests → docs. A vertical slice with one test before broad edits.
   verification loops): finish and commit a coherent part, then return `partial` with the list
   of what is left. A half-done task in one overloaded context is worse than two clean ones.
 
+### Visual work
+
+The task names a design reference, or its criteria judge how the result looks. A document
+cannot settle a look, so get a rendered result early and improve it yourself:
+
+1. Study the reference and the brief. Build the characteristic screen end to end first.
+2. Render it with the profile's `stand` or the project's dev server. Take a screenshot at a
+   phone width and at a desktop width, look at them, and compare them with the reference, or
+   with the brief when there is no reference.
+3. Adjust and render again until the screen holds up. Then build the other screens the same
+   way.
+
+Composition, wording and styling are yours inside the binding parts. Iterating on them is
+not drift and needs no task-file edit. Several screens touch more than five files: the
+shared look is the justification `coding-rules` cs-011 asks for, not a reason to split the
+task or return `partial`. Do not stop for approval after a render unless the
+task says so or two binding requirements conflict. Save the final screenshots under
+`evidence/` and list them in the report: the owner judges the look from them. When nothing
+here can render the result, say so in the report and give the command that serves it; do not
+claim the look was checked.
+
 ## Phase 5. Check every criterion
 
 Per acceptance criterion: the code path that proves it; pass/fail; on difference — drift
@@ -111,12 +134,13 @@ class. Check documentation invariants, contracts (method, path, schema, errors, 
 effects), failure scenarios.
 
 Drift is **benign** (better current solution, invariants intact) or a **bug** (task,
-architecture, invariant or practice broken). A broken invariant is never benign.
+architecture, invariant or practice broken). A broken invariant is never benign. Building it
+another way than the implementation plan suggests is not drift: no record, no edit.
 
 ## Phase 6. Fix and repeat
 
-Benign: keep code, reflect it in the task file, record why. Bug: fix code or docs, rerun
-affected tests, back to phase 5. Exit when no unhandled drift remains.
+Benign: keep code, reflect it in the binding parts of the task file, record why. Bug: fix
+code or docs, rerun affected tests, back to phase 5. Exit when no unhandled drift remains.
 
 ## Phase 7. Verification
 

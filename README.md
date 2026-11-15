@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 0.4.0" src="https://img.shields.io/badge/version-0.4.0-2C5F8A"></a>
+  <a href="CHANGELOG.md"><img alt="Version 0.5.0" src="https://img.shields.io/badge/version-0.5.0-2C5F8A"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3E8E41"></a>
   <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-6B3FA0">
   <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-177281">
@@ -27,7 +27,8 @@
 
 ## What it is
 
-Dev Cycle is a set of agent skills that carries a feature through a fixed sequence of stages.
+Dev Cycle is a set of agent skills that carries a feature through a sequence of stages, sized
+to the work.
 Each stage writes a document into the repository, and the next stage reads it. The state of
 the work lives in those files, not in a chat: stop at any point, open a new session a week
 later, name the bundle, and the cycle continues from where the files say it is.
@@ -62,7 +63,7 @@ What that gives you:
 - **Hands-off modes.** An autopilot that asks nothing, and four scheduled agents that fix
   known issues and advance the backlog on their own branches.
 
-> **Status: early.** Version 0.4.0. The skills are used on real projects, and the scripts
+> **Status: early.** Version 0.5.0. The skills are used on real projects, and the scripts
 > have tests, but the prompts have no automated evaluation suite yet. Expect rough edges and
 > read the [changelog](CHANGELOG.md) before you update.
 
@@ -200,6 +201,13 @@ one, and a fixed one is removed from it.
 | 7 | validation | one checkable case per criterion, exact test commands | `write-task` | QA developer |
 | 8 | execution | code, tests and docs per task; a validation verdict per task | `run-bundle` → `execute-task`, `validate-task` | developer, QA developer |
 | 9 | close | evidence for every proof point; the bundle moved to `_completed/`; branches merged | `tidy-folder` | release manager |
+
+The table is the full route. `cycle` takes it when the work carries a hard signal: a schema
+or migration, authorization, a wire contract, stored data, or more than one consumer.
+Without one it runs the planning passes together and keeps the documents short. Visual work
+(a landing page, a screen built to a design) plans only the constraints and the checks; the
+developer renders the result early, compares it with the reference and improves it, and the
+screenshots go to `evidence/` for the owner.
 
 The stage skills are read by `cycle`; they are not commands of their own. Two contracts
 apply throughout: `task-layout` (document layout, identifiers, frontmatter, the project

@@ -45,7 +45,9 @@ follows this skill.
 - The first useful scenario before secondary screens.
 - Screen states are part of the contract when they change the user's decision.
 - "What the user sees" is separate from "what the system does".
-- No visual detail without need: density, components, place in navigation matter; pixels later.
+- No visual detail without need: density, components, place in navigation matter. Composition,
+  exact wording and styling are settled on a rendered result during execution
+  ([visual work](../execute-task/SKILL.md#visual-work)), not in this document.
 - Permissions visible in the interaction model: who sees the entry, who may act, what disabled
   means, how denial is explained.
 - TUI: command, flags, prompts, defaults, cancel, non-interactive mode, exit codes, idempotent

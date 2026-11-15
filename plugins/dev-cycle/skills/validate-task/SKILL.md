@@ -86,10 +86,17 @@ Per criterion: exact code path; flow `input → check → logic → result`; exe
 command, smoke). Status is one of three:
 
 - **passed** — enough proof, behaviour matches;
-- **passed with deviation** — satisfied, but path, name, signature or flow differs;
+- **passed with deviation** — satisfied, but path, name, signature or flow differs from a
+  [binding part](../task-layout/SKILL.md#proportion) of the task;
 - **failed** — no proof, or behaviour contradicts the task.
 
 Record files checked, what proves the status, which command ran.
+
+A result built another way than the task's implementation plan suggests is not a deviation.
+A criterion about a look is one check: the rendered screenshot against the design reference
+the task names, at the widths the task names. Reading code does not prove a look. With no
+reference, check the screenshots against the brief and record them as the proof; the look
+itself is the owner's verdict at acceptance.
 
 ## Phase 4. Benign or bug
 
@@ -100,9 +107,9 @@ the difference is a rename, clarification, simplification or improvement, not a 
 behaviour.
 
 Bug when any holds: criterion missing or partial; documentation invariant broken; contract
-mismatch changes behaviour; check, validation or error handling weakened; path changed without
-a doc update; tests missing or contradicting fact; the difference cannot be defended by the
-current architecture.
+mismatch changes behaviour; check, validation or error handling weakened; a binding part
+changed without a doc update; tests missing or contradicting fact; the difference cannot be
+defended by the current architecture.
 
 Proof not crisp → bug or replan. Benign is never the default.
 
@@ -117,10 +124,10 @@ sees false success; the error text leaks nothing extra. Silent partial success i
 
 ## Phase 6. Fix and repeat
 
-Benign: keep code, align the task file with real behaviour, record why. Bug: fix at the root
-cause (code, test, artefact, doc); if the root is a stale task file, do not patch blindly, stop
-for replan. After any fix re-check criteria, invariants, contracts, failure paths and commands
-of the touched slice.
+Benign: keep code, align the binding parts of the task file with real behaviour, record why.
+Bug: fix at the root cause (code, test, artefact, doc); if the root is a stale task file, do
+not patch blindly, stop for replan. After any fix re-check criteria, invariants, contracts,
+failure paths and commands of the touched slice.
 
 After code edits run the profile's `format` and `lint`.
 

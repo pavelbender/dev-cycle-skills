@@ -8,6 +8,10 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-15
+
+The process is sized to the work, and visual work gets its own route.
+
 ### Added
 
 - **`probe-paths` skill.** One call is one iteration: walks a few not-yet-covered scenarios
@@ -16,6 +20,34 @@ minor version may change behaviour; such changes are listed under **Changed** an
   missing reverse actions, UI/API permission mismatches, races and states with no way out.
   State lives in files, so `/loop` can repeat it. Finds and records only. New profile key
   `probe_notes`.
+- **Visual work.** A task that names a design reference, or whose criteria judge a look, is
+  planned as constraints and checks only. The developer renders the result early, compares
+  it with the reference and improves it without an approval stop; the final screenshots go
+  to `evidence/`. Screens that share one look are one task for one developer.
+- **Decision source** in the workflow: `owner` or `proposed`. A proposed choice of stack,
+  library or look names the observation that reopens it.
+
+### Changed
+
+- **The route is sized to the work.** `cycle` no longer runs every stage for every bundle.
+  A hard signal (schema or migration, authorization, wire contract, stored data, more than
+  one consumer) keeps the full route. Without one the planning passes run together:
+  `plan-feature all`, then `write-task TNN all`.
+- **A task file fixes constraints, not the implementation.** Code goes into a task only when
+  another task or an outside consumer reads it, as a skeleton. The implementation plan is a
+  suggestion: building it another way is not drift and needs no doc edit. A leaf task gets a
+  short file.
+- **No criterion on the exact diff or file set.** Scope is checked as "nothing changed
+  outside the work areas".
+- **Result validity is defined and bounded.** Negative controls and mutation drills only for
+  criteria on a hard-signal path.
+- **One commit per change of meaning.** Corrections a stage makes to neighbouring documents
+  go into that stage's commit.
+
+### Upgrade notes
+
+- Bundles already under way keep the route their files show; nothing is re-planned.
+- To get the previous behaviour for one bundle, ask `cycle` for the full plan.
 
 ## [0.4.0] - 2026-11-12
 

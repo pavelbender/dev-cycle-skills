@@ -74,6 +74,28 @@ Without `pass:` infer it from sections present: current base → detail; subagen
 → slices; tests and result validity → validation. Without frontmatter: `status` from the
 suffix, `blocked_by` from the sequence.
 
+## Route
+
+The table is the full route. Size it per [proportion](../task-layout/SKILL.md#proportion)
+before stage 1, and say the route and its signal in the line that proposes the bundle path.
+On a bundle already under way, size it again from the signals for the tasks without `pass:`
+and leave the tasks that have one as they are.
+
+- **Full**: a hard signal, or a request for the full plan. Every stage runs for the tasks the
+  signal touches. `--until draft`, `detail` or `slices` runs the passes one by one up to it.
+  `--plan` and `--until validation` only set where to stop; they do not change the route.
+- **Merged**: no hard signal. `plan-feature <intent> all` covers stages 2–3; `write-task TNN
+  all` covers stages 4–7 in one context and ends at `pass: validation`, which is what the
+  detector reads. Documents are sized to the work.
+- **Visual work**: plan the constraints and the checks, then get to a rendered result;
+  [`execute-task`](../execute-task/SKILL.md#visual-work) holds the loop. There is no approval
+  stop after a render unless the user asked for one or two binding requirements conflict.
+  At the merge gate show the screenshots from `evidence/`.
+
+Every route keeps a stated goal, the constraints, the material decisions and a check of the
+result. Name the route in each stage brief. The user can name another route; when the
+signals name a heavier one, say so once.
+
 ## How to run a skill from here
 
 You are the coordinator. [Delegation](../task-layout/references/roles-and-models.md) says
@@ -126,7 +148,7 @@ then the advisor when the host has one); what is still open is an ordinary gate 
 
 Always stop, even with `--no-stop` (with `--auto` none of these asks, see Autopilot):
 
-- bundle path for a new intent;
+- bundle path for a new intent, with the [route](#route);
 - topic choice (`write-task` phase 0 without a `TNN`);
 - a blocking owner question (open decisions or questions marked as blocking);
 - replan signal or failed validation from `run-bundle`.
@@ -154,6 +176,7 @@ good place to report: start the next stage.
 | Where a gate or skill would ask | Autopilot decision |
 | --- | --- |
 | bundle path for a new intent | the proposed path |
+| route | the one the signals name; unclear → full |
 | topic choice | the recommended topic |
 | ambiguous goal, several candidate files | the reading most consistent with the bundle's accepted documents |
 | blocking owner question, open decision | the option the document recommends; a technical question with no recommendation that meets the three conditions of [`consilium`](../consilium/SKILL.md) → convene it, its result is the choice; else the smallest reversible one that keeps existing contracts and data |
@@ -177,12 +200,14 @@ Unlike the scheduled jobs (`agent-jobs/common.md`), autopilot does not stop with
 
 ## Rules
 
-- Every stage runs; do not skip one because the next "would cover it".
+- Run the [route](#route) you sized. Do not drop a check because a later stage "would cover
+  it".
 - One committer per tree. Parallel writers only as the waves above and `run-bundle` allow:
   each owns its own files, and shared documents have one writer.
 - Layout, IDs, frontmatter and profile come from [`task-layout`](../task-layout/SKILL.md).
 - Every stage ends committed per [`task-layout`](../task-layout/SKILL.md#git-hygiene),
-  before the next stage and before any gate or question.
+  before the next stage and before any gate or question. Corrections a stage makes to
+  neighbouring documents go into that stage's commit.
 - Language: summaries and decisions in the user's language, agent-facing detail in compact
   English.
 

@@ -88,6 +88,30 @@ Nearest local `AGENTS.md` files override the root one for files under them.
 - **Evidence artifact** — a proof-point report, validation result or incident report that
   proves one or more tasks.
 
+## Proportion
+
+Process follows the work, on two separate scales. Neither follows from the wording of the
+request.
+
+- **Risk** sets how strict planning and checks are. A **hard signal** is any of: a schema or
+  migration; authorization; a wire contract; stored data; more than one consumer of the
+  change. A task with a hard signal takes every planning pass, and validation with failure
+  paths. Signals unclear → treat them as hard.
+- **Uncertainty** sets where the answer is found. A contract is found by reading code and is
+  written down before the work. A look is found on a rendered result: **visual work** is a
+  task that names a design reference, or whose criteria judge how the result looks.
+
+Terms the skills use:
+
+- **Binding parts** of a task file: scope, contract, invariants, access, acceptance criteria.
+  A difference there is drift. The implementation plan and anything marked "suggested" are
+  the planner's proposal: the developer may build it another way with no record and no edit.
+- **Leaf task**: nothing in the bundle or outside it reads what the task produces (a page, a
+  view, a script with no callers). With no hard signal its file is short: goal, constraints,
+  criteria, checks, where to start.
+- **Sized documents**: a document says each fact once and is as long as the work needs. A
+  task file longer than the change it describes restates code.
+
 ## When a bundle is required
 
 Create a bundle when any holds: scenarios will feed a workflow and sequence; both a workflow
@@ -230,6 +254,9 @@ Every skill that writes files follows this; the user never has to ask for a comm
 - Commit your work and progress in logical commits, in the project's commit convention.
   Never end a turn, stop at a gate or wait for an answer with your changes uncommitted.
   Unfinished work is committed too; the message says what is left. Worktrees included.
+- A commit carries a change of meaning. Corrections a document causes in its neighbours go
+  into the same commit as the document. When a commit would only re-align wording between
+  documents, the same fact is written twice: keep it in one of them and link from the other.
 - A worker whose brief says `do not commit: the parent commits` (a slice helper, an agent of
   a parallel planning wave) leaves its edits unstaged and lists the changed files in its
   report. The parent commits them.
