@@ -57,6 +57,12 @@ them (`INV-1`, …) unless the project has its own scheme.>
 
 <Authorization, secrets, trust, negative outcomes, idempotency, rollback, data preservation.>
 
+## Decisions
+
+| ID | Decision | Source | Reopens when |
+| --- | --- | --- | --- |
+| D-01 | <what was decided> | owner \| proposed | <never, or the observation: "after the first render"> |
+
 ## Workflow acceptance criteria
 
 1. <Observable condition of a completed end-to-end scenario.>

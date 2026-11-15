@@ -123,6 +123,11 @@ short-lived handles; who owns each record, file, resource and what may be delete
 Implementation detail only when it changes a contract, security, dependency order or an
 acceptance criterion.
 
+[Visual work](../task-layout/SKILL.md#proportion): the workflow fixes what holds whatever the
+result looks like: routes, the content facts and promises the owner approved, owner
+decisions, accessibility, the checks. Composition, wording and styling are left to the
+render loop of `execute-task`.
+
 ## Phase 3. Impact map
 
 Table `Layer | Current state | Required change | Risk/invariant` for touched layers only:
@@ -138,6 +143,12 @@ truth, authorization context and denial reasons, compatibility direction (direct
 one-off backfill, no legacy bridge), artefact ownership, trust and checksums, rollback and
 repeated runs. Open questions short, each marked with what it blocks: the whole plan, one
 task, or the future.
+
+Record the source of each decision: `owner` (the owner said it, in the request or in an
+answer) or `proposed` (a planning agent chose it and the owner has not objected). A
+`proposed` decision stands until the owner says otherwise; do not record it as the owner's.
+A `proposed` choice of stack, library or look, made before anything was rendered or run,
+also names the observation that reopens it, for example "revisit after the first render".
 
 An unresolved architecture decision that spans several domains and blocks the plan goes up
 the ladder of [hard questions](../task-layout/references/roles-and-models.md#hard-questions)
@@ -157,8 +168,9 @@ with half a contract.
 Size and parallelism:
 
 - A task that changes more than one layer with separate verification, more than five files,
-  or needs more than one long verification loop is two tasks. Cut at a contract: the task
-  that fixes the contract first, its consumers after it.
+  or needs more than one long verification loop is two tasks, visual work excepted (last
+  item below). Cut at a contract: the task that fixes the contract first, its consumers
+  after it.
 - Shape the graph wide, not long. After a contract task its consumers (API, job, UI slice,
   docs) depend on the contract only, not on each other, so they form one wave.
 - Every task card names its `Work areas`: the packages and directories it changes.
@@ -167,6 +179,11 @@ Size and parallelism:
   one owner task; the others depend on it. Otherwise the wave collapses into a sequence.
 - `Implementation order` lists the waves: which tasks run together and what each wave waits
   for.
+- Visual work is not cut by file count or spread over a wave. Screens that share one look
+  are one task for one developer, the characteristic screen first: a look split between
+  parallel agents comes out inconsistent, and nobody sees the whole. Cut it only at a
+  contract the screens share, or when it outgrows one context; then the parts form a chain,
+  not a wave.
 
 Console UI as small capabilities, each tied to the task that delivers its contract (`model →
 API → UI slice`), not one "frontend" task at the end. A UI task names the exact API operation

@@ -52,7 +52,8 @@ decision records the task must keep.>
 
 ## Target model / contract
 
-<Schemas, signatures, migrations, file formats, outcomes — skeletons, not implementation.>
+<Only what another task or an outside consumer reads: schemas, signatures, migrations, file
+formats, as skeletons without bodies. Everything else: the outcome and its constraints.>
 
 ## Changes by layer
 
@@ -83,6 +84,8 @@ state.>
 
 ## Implementation plan
 
+<Suggested, not binding: the developer may build it another way without editing this file.>
+
 1. contract → 2. logic → 3. adapter → 4. tests → 5. docs
 
 ## Acceptance criteria
@@ -106,6 +109,12 @@ state.>
 
 - [`02-task-sequence.md`](../02-task-sequence.md)
 ````
+
+Short form, for a [leaf task](../../task-layout/SKILL.md#proportion) with no hard signal:
+frontmatter, heading and status lines, Goal, Plan and invariants (the constraints), Scope,
+Acceptance criteria, Tests and validation, Related. Under Goal name the files to start from.
+Visual work also names its design reference there (a file, an image or a URL), or says that
+there is none and the brief is the measure.
 
 Inline mark next to the place a delegated step arises:
 
