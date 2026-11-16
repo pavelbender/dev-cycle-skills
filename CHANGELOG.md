@@ -8,6 +8,14 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-16
+
+### Fixed
+
+- **Autopilot no longer records its own choices as the owner's.** A decision made on
+  `--auto` has Source `proposed` and names the observation that reopens it. Found on a
+  pilot run where a font and a placeholder decision were written down as `owner`.
+
 ## [0.5.0] - 2026-11-15
 
 The process is sized to the work, and visual work gets its own route.

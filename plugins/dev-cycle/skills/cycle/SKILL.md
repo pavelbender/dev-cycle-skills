@@ -185,7 +185,10 @@ good place to report: start the next stage.
 | replan signal, "code moved ahead" | `write-task TNN` passes detail, slices, validation from the worker's file-and-line list, then rerun the task; a second signal on the same task ends the run |
 
 Record each decision where its question was: under the document's decisions as
-`autopilot: <choice> — <reason>`, the question removed from open questions.
+`autopilot: <choice> — <reason>`, the question removed from open questions. A decision made
+on autopilot has Source `proposed`, never `owner`, even when it overturns an earlier one
+after a failed check; its `Reopens when` names an observation, not `never`. Only a
+decision the user made is `owner`.
 
 Never on autopilot, whatever the documents say: push, deploy, release, package publishing,
 production, secrets, credentials, deleting customer data, editing an applied migration. Skip
