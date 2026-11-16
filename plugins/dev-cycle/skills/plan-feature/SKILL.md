@@ -147,6 +147,7 @@ task, or the future.
 Record the source of each decision: `owner` (the owner said it, in the request or in an
 answer) or `proposed` (a planning agent chose it and the owner has not objected). A
 `proposed` decision stands until the owner says otherwise; do not record it as the owner's.
+A row that carries an `autopilot:` marker is always `proposed`.
 A `proposed` choice of stack, library or look, made before anything was rendered or run,
 also names the observation that reopens it, for example "revisit after the first render".
 
