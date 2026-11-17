@@ -162,7 +162,10 @@ command and output. Classify: implementation bug, stale test, stale task, enviro
    (`tidy-folder`); a partially closed bundle stays.
 5. A closed `PNN` → `evidence/PNN-<slug>.md`: date, branch, `git rev-parse HEAD`, commands,
    observed result.
-6. Commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene).
+6. Do not append an execution record to the task file. Commands, results and drift go to
+   `evidence/TNN-<slug>-run.md`; the task file keeps `status`, the `**Status:**` line and a
+   link to that file.
+7. Commit per [`task-layout`](../task-layout/SKILL.md#git-hygiene).
 
 ## Report
 
