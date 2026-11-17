@@ -84,18 +84,13 @@ state.>
 
 ## Implementation plan
 
-<Suggested, not binding: the developer may build it another way without editing this file.>
+<Suggested, not binding, at most ten lines: the developer may build it another way without editing this file.>
 
 1. contract → 2. logic → 3. adapter → 4. tests → 5. docs
 
 ## Acceptance criteria
 
-1. <One checkable case: command, test or UI action, expected result.>
-
-## Tests and validation
-
-- `<test command {path}>` — <what it proves>
-- <smoke on the stand when the task touches runtime>
+1. <One checkable case: the command, test or UI action that proves it, and the expected result. Smoke on the stand for runtime tasks is a criterion too.>
 
 ## Documentation invariants
 
@@ -112,7 +107,7 @@ state.>
 
 Short form, for a [leaf task](../../task-layout/SKILL.md#proportion) with no hard signal:
 frontmatter, heading and status lines, Goal, Plan and invariants (the constraints), Scope,
-Acceptance criteria, Tests and validation, Related. Under Goal name the files to start from.
+Acceptance criteria (each names its command), Related. Under Goal name the files to start from.
 Visual work also names its design reference there (a file, an image or a URL), or says that
 there is none and the brief is the measure.
 

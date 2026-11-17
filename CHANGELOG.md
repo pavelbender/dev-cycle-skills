@@ -8,6 +8,32 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-18
+
+Task files stop carrying records and numbers that go stale. Measured on a repeatable task from
+a fixed checkout (three runs per variant): about 23% less spend per task, task file a quarter
+shorter, acceptance checks unchanged.
+
+### Changed
+
+- **Records leave the task file.** Execution records go to `evidence/TNN-<slug>-run.md`,
+  the validation matrix, commands and drift list to `evidence/TNN-<slug>-validation.md`. The
+  task file keeps `status`, the `**Status:**` line and a link.
+- **No line numbers or counts in a task file.** `write-task` principle 3 anchors to a symbol,
+  never to `file:NNN`, and forbids counts of tests, files or output lines.
+- **The task template is shorter.** The "Tests and validation" section is gone: every
+  acceptance criterion names its own command. The implementation plan is at most ten lines.
+
+### Added
+
+- **`write-task/scripts/lint-task.sh`.** Flags `file:line` references, test and PASS counts,
+  record sections and a task file over 20000 bytes. The `write-task` checklist runs it.
+
+### Upgrade notes
+
+- Task files already written keep their sections; nothing is rewritten.
+- A project that read "Tests and validation" from task files by name reads the criteria instead.
+
 ## [0.5.1] - 2026-11-16
 
 ### Fixed

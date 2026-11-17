@@ -136,7 +136,8 @@ After code edits run the profile's `format` and `lint`.
 On "matches" (with or without fixes): frontmatter `status: validated`, `**Status:**` line with
 date and link to the evidence, rename to `_VAL` (from `_DONE`, or from no suffix when
 acceptance and validation coincide), links updated. Proof of a `PNN` goes to
-`evidence/PNN-<slug>.md`.
+`evidence/PNN-<slug>.md`. The criteria matrix, commands and drift list go to
+`evidence/TNN-<slug>-validation.md`, never into the task file.
 
 Exactly one verdict:
 

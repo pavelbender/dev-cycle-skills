@@ -63,8 +63,10 @@ headings a bundle already uses.
    diffs and file reads first, then comparison; discrepancies stated explicitly.
 2. **Out-of-scope is a contract.** Every deferred item of the predecessors gets a decision:
    include, keep out, include partially — one-line reason and a link.
-3. **Exact paths.** Paths, modules, commands, schema names from the actual repository, never
-   copied from the card blindly.
+3. **Exact paths, no line numbers.** Paths, modules, commands, schema names from the actual
+   repository, never copied from the card blindly. Anchor to a symbol, never to a line: no
+   `file:NNN`, no counts of tests, files or output lines in a task file or a card; they go
+   stale at the first commit of a predecessor.
 4. **One criterion, one checkable case.** Verified by one command, test or UI action. "Works
    correctly" is not a criterion. No criterion fixes the exact diff or the exact set of
    changed files: the cycle's own status, evidence and doc edits change files the task did
@@ -171,7 +173,9 @@ Checklist: ID and path match the sequence; `blocked_by` = `Depends on`; no dupli
 formed file; every contract has a data flow and an access rule; every criterion has a test or
 command; every out-of-scope item has reason and link; paths verified; `SNN` atomic and tied
 to a criterion; invariants agree with decision records and schemas; no code that only this
-task's developer reads; the file is not longer than the change it describes.
+task's developer reads; the file is not longer than the change it describes; run
+`scripts/lint-task.sh <file>` (path relative to this skill) and fix every finding before you
+return.
 
 ## Phase 7. Reply
 
