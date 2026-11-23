@@ -8,6 +8,59 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-23
+
+Test runs, file renames and coordinator waiting stop eating the wall clock. Source: thirteen
+run reports from one product, reviewed by a consilium. The reports
+show repeated full suites (17 full API runs, 222 machine-minutes in one bundle), polling loops
+(97 minutes in another), about 15 link conflicts from `_DONE`/`_VAL` renames in one bundle,
+and a coordinator turn that ended with work open.
+
+### Added
+
+- **`signals:` in the task frontmatter.** The hard signals of a task, set once by `write-task`
+  and read by every later stage. `[]` means none: short route, short task form, no mutation
+  drills, everyday-tier developer and QA. A list keeps the full route, mutation drills on the
+  criteria it touches and a strong-tier QA. A missing field means hard.
+- **Four more hard signals:** a redirect or untrusted input; concurrency or locks; deleting
+  files outside the database; secrets or a rollout step.
+- **Findings outside the task are one line** in the report, not an investigation. Visual work
+  keeps at most two renders per width.
+- **Test runs rules** in the delegation reference. Focused tests inside a task; a full package
+  or suite only when a criterion names it or the task changes shared code; one full gate by
+  the coordinator on the merged head; every run that backs a claim recorded with the commit
+  SHA and the runner's summary line; no repeat of a run that is green on the same code; a long
+  run is one background command and one wait; one test runner on a shared database.
+- **Worktree hygiene line** for worker briefs: no `git stash`, a scratch directory of its own,
+  stop a process only by a PID it started, unfiltered output when investigating a failure,
+  `Edit` on CRLF files.
+- **Grep before you change asserted behaviour.** `execute-task` and `fix` find every test and
+  document that asserts the old value, by every spelling, before editing.
+
+### Changed
+
+- **A task file is never renamed.** Status lives only in the frontmatter; `_DONE` and `_VAL`
+  are no longer written. Older files keep their suffix and are still read as that status.
+- **Autopilot keeps data.** Choosing an option whose effect is to delete stored data is on the
+  never-on-autopilot list: take the option that keeps it and list the skip.
+- **`execute-task` and `fix` run `test` on the touched paths**, not on the whole package.
+  `validate-task` cites the developer's green run on the same code instead of repeating it and
+  checks a sample of the developer's mutation table.
+- **`run-bundle` coordinator** no longer reruns a task's tests when the evidence holds a green
+  run on unchanged code, and runs the full suites once at the close.
+- **Coordinator rules apply with or without autopilot**: a message without a tool call ends the
+  turn; "waiting on its own background work" notices are not returns; a return is relayed as a
+  verdict line, the counts and the decisions it needs.
+- **Returns are at most about 20 lines**; matrix and command output go to `evidence/`.
+
+### Upgrade notes
+
+- Put the slow packages of the project in the profile (`boundaries` or beside `test`) with
+  their timeout flag, for example `go test -timeout 45m ./internal/seed`. Give a web `test`
+  command a `{path}` so a focused run is possible.
+- Nothing in a bundle under way needs a rewrite. Tasks without `signals:` are treated as
+  hard until `write-task` sets it.
+
 ## [0.6.0] - 2026-11-18
 
 Task files stop carrying records and numbers that go stale. Measured on a repeatable task from

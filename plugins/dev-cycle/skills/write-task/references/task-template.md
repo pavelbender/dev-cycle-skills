@@ -12,6 +12,7 @@ status: formed
 blocked_by: [T02, T03]
 blocks: [T08]
 milestone: P02           # optional
+signals: []              # hard signals, e.g. [authz, schema]; [] = none; missing = treat as hard
 ---
 
 # Task: T05. <task name>

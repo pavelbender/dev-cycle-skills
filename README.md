@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img alt="Version 0.6.0" src="https://img.shields.io/badge/version-0.6.0-2C5F8A"></a>
+  <a href="CHANGELOG.md"><img alt="Version 0.7.0" src="https://img.shields.io/badge/version-0.7.0-2C5F8A"></a>
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-3E8E41"></a>
   <img alt="Claude Code plugin" src="https://img.shields.io/badge/Claude%20Code-plugin-6B3FA0">
   <img alt="Codex plugin" src="https://img.shields.io/badge/Codex-plugin-177281">
@@ -63,7 +63,7 @@ What that gives you:
 - **Hands-off modes.** An autopilot that asks nothing, and four scheduled agents that fix
   known issues and advance the backlog on their own branches.
 
-> **Status: early.** Version 0.6.0. The skills are used on real projects, and the scripts
+> **Status: early.** Version 0.7.0. The skills are used on real projects, and the scripts
 > have tests, but the prompts have no automated evaluation suite yet. Expect rough edges and
 > read the [changelog](CHANGELOG.md) before you update.
 
@@ -229,8 +229,7 @@ One directory holds everything about one feature.
   02-task-sequence.md           # source of truth for task IDs and dependencies
   tasks/
     T01-<task-slug>.md
-    T02-<task-slug>_DONE.md
-    T03-<task-slug>_VAL.md
+    T02-<task-slug>.md
   evidence/
     P01-<proof-slug>.md
 ```

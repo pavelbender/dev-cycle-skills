@@ -50,7 +50,7 @@ project profile ([`task-layout`](../task-layout/SKILL.md#project-profile)).
 Run `bash ../task-layout/scripts/bundle-status.sh <bundle>` (the path is relative to this
 file; on Windows in Git Bash, which is the Bash tool of Claude Code): it prints this table from `02-task-sequence.md` and the task frontmatter. Without
 bash, read `02-task-sequence.md` and every `tasks/TNN-*.md` yourself; without frontmatter:
-`status` from the suffix, `blocked_by` from the sequence's `Depends on`. Table:
+`status` from the suffix of an older file, else `formed`; `blocked_by` from the sequence's `Depends on`. Table:
 
 ```text
 ID | file | status | blocked_by | ready? | work areas (packages/dirs from Scope and Changes by layer) | PNN
@@ -88,7 +88,7 @@ asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
    SCOPE    the task's work areas; out of scope: other tasks' files, anything the task does not name
    RULES    <boundaries line>; <owner decisions for this task>; do not push
    HELPERS  helpers allowed, 2 layers left: SNN items and read-only lookups
-   DONE     task file `status: done`, renamed `_DONE`; format, lint and the task's tests pass; tree clean
+   DONE     task file `status: done`, file not renamed; format, lint and the task's tests pass; tree clean
    RETURN   task status, files, commands with output, residual risks, questions, `needs consilium`; `partial` with what is left
    COMMIT   your files, in logical commits, before you return
    ```
@@ -99,15 +99,19 @@ asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
    ```text
    ROLE     QA developer; <model>, <effort>
    GOAL     prove or disprove that the result satisfies the task file
-   READ     <skills dir>/validate-task/SKILL.md <task file path after rename>
+   READ     <skills dir>/validate-task/SKILL.md <task file path>
    WORKDIR  <worktree path>
    SCOPE    fixes inside the task's work areas, the task file, evidence
    RULES    <boundaries line>; <owner decisions for this task>; do not push
    HELPERS  helpers allowed, 2 layers left: read-only checks per criterion, noisy test runs
-   DONE     one verdict line; status and suffix match it; tree clean
+   DONE     one verdict line; `status` matches it; tree clean
    RETURN   the verdict line, criteria matrix, commands with output, questions, `needs consilium`
    COMMIT   fixes, status and evidence before you return
    ```
+
+   Both briefs carry the Test runs line of the
+   [delegation](../task-layout/references/roles-and-models.md#brief) and, in a parallel batch,
+   "focused tests, type-check and lint only; no full suite".
 
    In a parallel batch start all developers in one message. Start a task's QA developer as
    soon as its developer returns; do not wait for the rest of the batch.
@@ -117,13 +121,15 @@ asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
    ```text
    MODE    autopilot: never ask or wait; where a skill says ask or confirm, take the recommended
            option, record it in the task file as `autopilot: <choice> — <reason>`, continue;
-           "code moved ahead" → return a replan signal; finish validated (_VAL), not review
+           "code moved ahead" → return a replan signal; finish `validated`, not review
    ```
 
-3. On return check yourself: task file renamed and `status` matches the suffix; the verdict is
+3. On return check yourself: the task file keeps its name and its `status` matches the verdict; the verdict is
    one of the two `Task validated` lines; `git status --short` is clean; profile `format` and
-   `lint` are clean; the tests the task names pass when you rerun them. A failure goes back to
-   the worker with the exact output; a second failure stops that task. Add a model notes row
+   `lint` are clean; the evidence records the task's tests green with a commit SHA and a
+   summary line, and the code paths are unchanged since (`git diff --quiet <sha> HEAD --
+   <code paths>`). Rerun the task's tests yourself only when that record is missing or
+   stale. A failure goes back to the worker with the exact output; a second failure stops that task. Add a model notes row
    per worker.
 4. `partial` from a developer → brief a fresh developer in the same worktree with the list of
    what is left, one step up in effort or tier. A second `partial` on the same task means the
@@ -139,7 +145,7 @@ asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
 ## Phase 4. Merge into the bundle branch
 
 In the target branch's worktree: `git merge --no-ff <task_branch>`, then `format`, `lint` and
-the task's tests again. Merge one task at a time, in graph order. Resolve only trivial
+the task's own tests again, not the full suite. Merge one task at a time, in graph order. Resolve only trivial
 conflicts (link paths, sequence rows); code conflicts go back to the worker. Then: update the sequence row if needed, remove the task
 worktree, stop its stand. Dependants become ready after the merge, not after the report.
 
@@ -147,7 +153,9 @@ worktree, stop its stand. Dependants become ready after the merge, not after the
 
 All tasks `done`/`validated` and every `PNN` has an `evidence/` report → `tidy-folder` on the
 bundle (to `_completed/`), update the domain README, then merge the bundle branch into
-`wip_branch` with `--no-ff`, rerun checks. This last merge is a gate: ask unless the user
+`wip_branch` with `--no-ff`, rerun checks. This is where the full suites run, once on the
+merged head, as one background command ([Test runs](../task-layout/references/roles-and-models.md#test-runs)).
+This last merge is a gate: ask unless the user
 asked for an uninterrupted run. Pushing follows the project's rules; never on `AUTOPILOT`.
 A partially closed bundle stays in place and unmerged.
 

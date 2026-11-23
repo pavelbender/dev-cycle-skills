@@ -100,7 +100,7 @@ server when the project has one; docs and literals via search.
 | Question | Where |
 | --- | --- |
 | Canonical context? | domain workflows, decision records, schemas, `AGENTS.md`, bundle READMEs |
-| Already done? | `_DONE`/`_VAL` tasks, `_completed/`, evidence, tests, `git log` |
+| Already done? | `done`/`validated` tasks, `_completed/`, evidence, tests, `git log` |
 | Current contract? | JSON Schema, parquet schemas, migrations, CLI, OpenAPI, consumers |
 | Boundaries not to cross? | decision records, invariants, forbidden zones and `boundaries` in `AGENTS.md` |
 | How to prove? | existing tests, the profile's `stand` smoke, the project's known-issues list |

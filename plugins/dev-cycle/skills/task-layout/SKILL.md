@@ -2,8 +2,8 @@
 name: task-layout
 description: >-
   Contract for development-cycle documents: feature bundle layout (scenarios, workflow, task
-  sequence, task files, evidence), TNN/PNN/SNN identifiers, task-file frontmatter and status
-  suffixes, readiness, language of artifacts, and the project profile the other dev-cycle
+  sequence, task files, evidence), TNN/PNN/SNN identifiers, task-file frontmatter and status,
+  readiness, language of artifacts, and the project profile the other dev-cycle
   skills read. Use when creating, classifying, renaming or checking task documents, or when
   another dev-cycle skill points here.
 disable-model-invocation: true
@@ -95,8 +95,16 @@ request.
 
 - **Risk** sets how strict planning and checks are. A **hard signal** is any of: a schema or
   migration; authorization; a wire contract; stored data; more than one consumer of the
-  change. A task with a hard signal takes every planning pass, and validation with failure
-  paths. Signals unclear → treat them as hard.
+  change; a redirect or untrusted input; concurrency or locks; deleting files outside the
+  database; secrets or a rollout step. A task with a hard signal takes every planning pass,
+  and validation with failure paths. Signals unclear → treat them as hard.
+- **`signals:`** in the task frontmatter records that judgement once, so every stage reads it
+  instead of deciding again. `write-task` sets it in the first pass. An empty list
+  (`signals: []`) means no hard signal: the short route, the short task form, no mutation
+  drills, a lighter model and an everyday-tier QA. A list names the signals
+  (`[authz, schema]`) and keeps the full route, mutation drills on the criteria they touch,
+  and a strong-tier QA. A missing field means hard. A stage that finds a signal the field
+  lacks adds it and says so.
 - **Uncertainty** sets where the answer is found. A contract is found by reading code and is
   written down before the work. A look is found on a rendered result: **visual work** is a
   task that names a design reference, or whose criteria judge how the result looks.
@@ -129,8 +137,7 @@ and all references in one change.
   02-task-sequence.md
   tasks/
     T01-<task-slug>.md
-    T02-<task-slug>_DONE.md
-    T03-<task-slug>_VAL.md
+    T02-<task-slug>.md
   evidence/
     P01-<proof-slug>.md
   _completed/                   # at domain level: closed bundles, moved whole
@@ -147,7 +154,9 @@ IDs and never continue as task numbers. A domain with more than one bundle keeps
   subagent-ready items inside one task.
 - IDs are copied from `02-task-sequence.md`, never derived from the next free filename.
 - Published IDs are never renumbered.
-- `_DONE` and `_VAL` are task lifecycle suffixes only; planning artifacts never get them.
+- A task's status is never part of its file name. The file keeps its name from the first
+  commit on, so no link to it breaks. Older files that carry `_DONE` or `_VAL` keep them;
+  they are read as that status and not renamed.
 
 ## Task file frontmatter
 
@@ -159,6 +168,7 @@ blocked_by: [T01]       # = Depends on column of 02-task-sequence.md; task codes
 blocks: [T05, T08]      # = Unlocks column; task codes only
 milestone: P01          # optional: PNN from 02-task-sequence.md
 pass: validation        # optional: last write-task pass: draft | detail | slices | validation
+signals: []             # hard signals of the task, [] = none; missing = treat as hard
 # assigned_to: alice    # optional: only when the bundle has more than one contributor
 # jira_link: https://…  # optional: tracker link under the profile's tracker_key
 ---
@@ -172,8 +182,10 @@ Rules:
 - `id`, `status`, `blocked_by`, `blocks` are required; the rest are optional. Empty set: `[]`.
 - `assigned_to` only in bundles with more than one contributor; a solo project omits it.
 - A tracker link is optional and tracker-specific; its key comes from the profile.
-- `status` ⇔ suffix: `done` ⇔ `_DONE`, `validated` ⇔ `_VAL`, others ⇔ no suffix. A task may go
-  from no suffix straight to `_VAL` when acceptance and validation coincide.
+- `status` lives only in the frontmatter; the file name does not change with it. A task may go
+  straight to `validated` when acceptance and validation coincide.
+- `signals` is a flow list of short words (`authz`, `schema`, `wire`, `stored-data`,
+  `consumers`, `untrusted-input`, `concurrency`, `file-delete`, `secrets`, `rollout`).
 - `blocked_by` ⇔ `Depends on`, `blocks` ⇔ `Unlocks` in `02-task-sequence.md`, which stays the
   source of truth; a mismatch is a defect of the task file.
 - Readiness is derived: ready when every code in `blocked_by` is `done` or `validated`.
@@ -186,12 +198,12 @@ Rules:
 | `formed` | specified, not started |
 | `in_progress` | being implemented |
 | `review` | implemented, waits for review or acceptance |
-| `done` | accepted; file renamed `_DONE` |
-| `validated` | validated after completion; file renamed `_VAL` |
+| `done` | accepted |
+| `validated` | validated after completion |
 | `withdrawn` | dropped by decision; not counted in readiness |
 
-Files without frontmatter (older tasks): `status` from the suffix, `blocked_by` from the
-sequence. Add frontmatter when the file is next touched.
+Files without frontmatter (older tasks): `status` from a `_DONE` or `_VAL` suffix when the
+name has one, else `formed`; `blocked_by` from the sequence. Add frontmatter when the file is next touched.
 
 ## Language of artifacts
 
@@ -233,8 +245,8 @@ not "previous task", unless the graph has exactly one.
 | `scenario` | `00-interaction-scenarios.md` | interaction planning |
 | `workflow` | `01-workflow.md` | target behaviour and model |
 | `task-sequence` | `02-task-sequence.md` | task IDs, dependencies, proof points |
-| `formed` | `tasks/TNN-*.md` with `task_heading`, no suffix | specified; readiness from the graph |
-| `done` | `_DONE` or `_VAL` suffix | implemented; verify against repository truth |
+| `formed` | `tasks/TNN-*.md` with `task_heading`, `status` before `done` | specified; readiness from the graph |
+| `done` | `status: done` or `validated` (older files: `_DONE` or `_VAL` suffix) | implemented; verify against repository truth |
 | `evidence` | file under `evidence/` | proof, not a task |
 | `draft` | anything else | review explicitly; never treat as a task by its number |
 

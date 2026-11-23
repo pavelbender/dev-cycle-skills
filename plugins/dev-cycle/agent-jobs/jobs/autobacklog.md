@@ -61,7 +61,7 @@ human is not `needs-owner` by itself: do that work yourself to the extent this m
 allows, and mark only the cells that need what you cannot reach.
 
 Validation and acceptance are allowed when backed by evidence: run `validate-task`, record
-proofs with commands and output, set `_VAL` and `PASS` only for what you checked, mark each
+proofs with commands and output, set `status: validated` and `PASS` only for what you checked, mark each
 cell you could not run `NOT_RUN` or `BLOCKED` with the reason. A package whose required
 proofs all pass (or whose residual cells the owner already accepted in its documents) may
 be closed per `tidy-folder`: move it to `_completed/`, update its status map, delete its
@@ -99,7 +99,7 @@ bundle path and `--no-stop`. Unattended overrides of its gates:
 3. Worktree and branch: `bl/<slug>`, the continued branch, or the bundle branch.
 4. Read the task file and the code it touches; confirm the gap still exists.
 5. Implement (or run the cycle, validation or proof) following the dev-cycle skills: status,
-   suffixes, evidence.
+   evidence.
 6. Finish the change (common rules). Update the bundle's sequence and status map on the
    branch. Edit the `backlog` file on the branch only if the operator's working-tree copy
    equals `wip_branch`'s (`git diff --quiet -- <backlog>` in the main checkout); otherwise

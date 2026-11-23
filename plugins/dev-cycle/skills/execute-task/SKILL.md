@@ -2,7 +2,7 @@
 name: execute-task
 description: >-
   Implement a development task from its task file: compare the task with current code,
-  implement, test, update docs, set the status and the _DONE/_VAL suffix. Use when asked to
+  implement, test, update docs, set the status in the frontmatter. Use when asked to
   implement, execute or carry out a task file ("implement task", "execute T05", «реализуй
   задачу из», «выполни задание», «сделай T05»).
 argument-hint: "<task-file-path>"
@@ -32,7 +32,7 @@ matrices) in compact English. Identifiers, paths, commands and error text verbat
    commands, forbidden zones, tasks root, decisions location.
 2. Nearest local `AGENTS.md` for every file you edit; it overrides the root one.
 3. The layout contract [`task-layout`](../task-layout/SKILL.md): bundle layout, IDs,
-   frontmatter, suffixes.
+   frontmatter, status.
 4. The project glossary and decision records when the profile names them.
 5. Code structure rules: [`coding-rules`](../coding-rules/SKILL.md) unless the project
    overrides them.
@@ -46,6 +46,8 @@ matrices) in compact English. Identifiers, paths, commands and error text verbat
   Executable truth (migrations, schemas, tests) beats prose.
 - **Architecture stays intact.** Reuse the package's patterns: repositories, services,
   migrations, schemas, tests, docs layout.
+- **Findings outside the task are one line.** A defect you meet outside the work areas goes
+  into the report as one line (path, symptom). Do not investigate it and do not fix it.
 - **Docs are part of the result.** Behaviour changed → update workflow, decision records,
   local `AGENTS.md`, `02-task-sequence.md`.
 - **One committer per tree: you.** Helpers do read-only research, isolated checks and the
@@ -57,14 +59,14 @@ matrices) in compact English. Identifiers, paths, commands and error text verbat
 Extract: goal, in/out of scope, touched layers, contracts and schemas, acceptance criteria,
 tests, documentation invariants, `blocked_by`.
 
-Readiness: every code in `blocked_by` is `done`/`validated` (or `_DONE`/`_VAL`) or explicitly
+Readiness: every code in `blocked_by` is `done`/`validated` or explicitly
 accepted as an existing contract. Blocked → stop and report what blocks.
 
 Restate the goal in 2–4 sentences. Ambiguous → ask before the first edit. As a subagent you
 cannot ask: do the parts the question does not block, and return the question in your report.
 
 Checklist: drift check → architecture read → implement → tests → criteria check → fixes →
-re-check → format/lint/tests/smoke → docs → status and rename.
+re-check → format/lint/tests/smoke → docs → status.
 
 ## Phase 2. Compare the task with current code
 
@@ -95,7 +97,11 @@ containers, network); tests that will prove the result.
 Typical order: contract (types, schemas, migration) → logic → adapter (CLI, API, job) →
 tests → docs. A vertical slice with one test before broad edits.
 
-- Run the profile's `format` and `lint` after edits, `test` for the touched package.
+- Run the profile's `format` and `lint` after edits, `test` on the paths you touched and
+  their direct consumers. Not the whole package: follow the
+  [Test runs](../task-layout/references/roles-and-models.md#test-runs) rules. Before you change
+  behaviour that tests assert, grep those tests by every spelling of the old value and update
+  them in the same pass.
 - Schema or wire-contract changes only together with a decision record when the project keeps
   them.
 - One acceptance criterion → one test where practical.
@@ -116,7 +122,7 @@ cannot settle a look, so get a rendered result early and improve it yourself:
    phone width and at a desktop width, look at them, and compare them with the reference, or
    with the brief when there is no reference.
 3. Adjust and render again until the screen holds up. Then build the other screens the same
-   way.
+   way. Keep at most two renders per width: the one you compared and the final one.
 
 Composition, wording and styling are yours inside the binding parts. Iterating on them is
 not drift and needs no task-file edit. Several screens touch more than five files: the
@@ -145,19 +151,22 @@ code or docs, rerun affected tests, back to phase 5. Exit when no unhandled drif
 ## Phase 7. Verification
 
 Smallest sufficient check first, then wider by risk: profile `format`, `lint`, `test {path}`;
-the `stand` up and smoke commands when the task touches runtime. Quote failures verbatim:
+the `stand` up and smoke commands when the task touches runtime. A full package or suite
+only when a criterion names it or the task changes shared code, once, last; the coordinator
+runs the full gate after the merge. Record each run that backs a claim in the run file with
+the commit SHA, the command, the exit code and the runner's summary line. Quote failures verbatim:
 command and output. Classify: implementation bug, stale test, stale task, environment problem
 — then phase 6.
 
 ## Phase 8. Docs and status
 
-1. Update docs to shipped behaviour: bundle workflow, `02-task-sequence.md` (task row, file
-   path after rename), decision records, local `AGENTS.md`.
+1. Update docs to shipped behaviour: bundle workflow, `02-task-sequence.md` (task row),
+   decision records, local `AGENTS.md`.
 2. Task file: frontmatter `status` and the `**Status:**` line per
    [`task-layout`](../task-layout/SKILL.md). First implementation → `review` (awaits review) or
    `done` (no acceptance step); re-validation of completed work → `validated`.
-3. Rename: `<name>.md` → `<name>_DONE.md` on `done`; → `_VAL` on `validated`. One suffix,
-   never a chain. Update every link to the file.
+3. Never rename the file: the status lives in the frontmatter only, so links to the task
+   never break. (An older file that already carries `_DONE` or `_VAL` keeps its name.)
 4. Last task of a fully closed bundle → the bundle moves to `_completed/` whole
    (`tidy-folder`); a partially closed bundle stays.
 5. A closed `PNN` → `evidence/PNN-<slug>.md`: date, branch, `git rev-parse HEAD`, commands,
@@ -169,7 +178,7 @@ command and output. Classify: implementation bug, stale test, stale task, enviro
 
 ## Report
 
-1. Task file path after rename and its `status`.
+1. Task file path and its `status`.
 2. Changed files: code, tests, docs.
 3. Verification commands and results, verbatim on failure.
 4. Benign drift reflected in the task.
@@ -203,5 +212,5 @@ does not depend on it. Only the main conversation convenes a
 ## Anti-patterns
 
 Implementing a stale task blindly. Skipping the architecture read. Calling a broken invariant
-benign. Closing without tests. Leaving docs stale. Leaving a finished task without a suffix or
-with a suffix chain. Claiming "done" without command output.
+benign. Closing without tests. Leaving docs stale. Leaving a finished task with a stale `status`
+or renaming the file to show it. Claiming "done" without command output.

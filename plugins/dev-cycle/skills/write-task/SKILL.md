@@ -37,7 +37,9 @@ Several passes (`detail slices`) run in that order in one context, so the code i
 
 Each pass edits the file in place, keeps earlier content and never renumbers IDs. After a pass
 set frontmatter `pass:` to the highest pass applied (`draft` < `detail` < `slices` <
-`validation`); `cycle` reads it.
+`validation`); `cycle` reads it. In the first pass also set `signals:` (the hard signals of
+the task per [proportion](../task-layout/SKILL.md#proportion); `[]` for none). Later stages
+read it and do not decide again.
 
 A [leaf task](../task-layout/SKILL.md#proportion) with no hard signal takes `all` in one pass
 and the short form of the template. It still ends at `pass: validation`.
@@ -105,7 +107,7 @@ Read the root `AGENTS.md` with its profile, the domain `README.md`, then the bun
 Status map: `ID | file | status | blocked_by | ready/blocked | out-of-scope items`.
 `bash ../task-layout/scripts/bundle-status.sh <bundle>` (the path is relative to this file;
 on Windows in Git Bash, which is the Bash tool of Claude Code) prints all columns but the last; add the out-of-scope items from the done tasks. Readiness
-comes from `blocked_by`/`Depends on`, never from file numbers. Compare with code: a `_DONE`
+comes from `blocked_by`/`Depends on`, never from file numbers. Compare with code: a `done`
 task without implementation and a formed task whose result already ships are discrepancies.
 
 No topic chosen → propose 3–5 as a table: name, status (`formed` / `new` / `revise`),
