@@ -29,14 +29,14 @@ user's language; the strategy block and file map are compact English.
    tasks and the index.
 2. **History is not thrown away.** Finished tasks and implementation history move, they are
    not deleted, while they carry value.
-3. **One source of truth.** If a `_DONE` file and a guide repeat a rule, the guide stays
+3. **One source of truth.** If a finished task file and a guide repeat a rule, the guide stays
    canonical and the historical file becomes secondary with a link.
 4. **Minimality.** If an index and links remove the noise, files stay where they are.
-5. **Fact over name.** `_DONE`/`_VAL` hint, they do not prove: check content and inbound links.
+5. **Fact over name.** The `status` and an old `_DONE`/`_VAL` suffix hint, they do not prove: check content and inbound links.
 6. **Links never break.** Every move updates entry points and is verified by search.
 7. **Layout per contract.** [`task-layout`](../task-layout/SKILL.md): a cycle moves
-   to `_completed/` whole and only when closed; a partially done cycle stays with its `_DONE`
-   files; `_rejected/` for rejected cycles; planning artefacts `00`/`01`/`02` get no suffix; IDs
+   to `_completed/` whole and only when closed; a partially done cycle stays with its done tasks
+   in place; `_rejected/` for rejected cycles; planning artefacts `00`/`01`/`02` carry no status; IDs
    are never renumbered.
 
 ## Phase 1. Local context
@@ -50,7 +50,7 @@ Read root `AGENTS.md`, the nearest `AGENTS.md` of the area, the folder contents,
 | Class | Meaning |
 | --- | --- |
 | `canonical` | guide, workflow, task sequence, ADR link, status document |
-| `active-task` | task without `_DONE`/`_VAL` or in an open cycle |
+| `active-task` | task with `status` before `done` or in an open cycle |
 | `historical-task` | finished task, evidence of a closed cycle, implementation history |
 | `index` | README, status map, routing note |
 | `draft/noise` | draft, duplicate, stale note without inbound links |

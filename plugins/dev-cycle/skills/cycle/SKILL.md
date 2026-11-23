@@ -71,8 +71,8 @@ Check the result as the skill's own report describes, and commit state as in
 | 9 | close | bundle in `_completed/`, bundle branch merged into the WIP branch | `tidy-folder` (via `run-bundle` phase 5) | release manager |
 
 Without `pass:` infer it from sections present: current base → detail; subagent-ready items
-→ slices; tests and result validity → validation. Without frontmatter: `status` from the
-suffix, `blocked_by` from the sequence.
+→ slices; tests and result validity → validation. Without frontmatter: `status` from a `_DONE`/`_VAL` suffix of an older file, else `formed`;
+`blocked_by` from the sequence.
 
 ## Route
 
@@ -81,10 +81,11 @@ before stage 1, and say the route and its signal in the line that proposes the b
 On a bundle already under way, size it again from the signals for the tasks without `pass:`
 and leave the tasks that have one as they are.
 
-- **Full**: a hard signal, or a request for the full plan. Every stage runs for the tasks the
+- **Full**: a hard signal (the task's `signals:` is not empty or missing), or a request for
+  the full plan. Every stage runs for the tasks the
   signal touches. `--until draft`, `detail` or `slices` runs the passes one by one up to it.
   `--plan` and `--until validation` only set where to stop; they do not change the route.
-- **Merged**: no hard signal. `plan-feature <intent> all` covers stages 2–3; `write-task TNN
+- **Merged**: no hard signal (`signals: []`). `plan-feature <intent> all` covers stages 2–3; `write-task TNN
   all` covers stages 4–7 in one context and ends at `pass: validation`, which is what the
   detector reads. Documents are sized to the work.
 - **Visual work**: plan the constraints and the checks, then get to a rendered result;
@@ -168,7 +169,9 @@ job never merges into the WIP branch), skip that step and report it.
 Implies `--no-stop`. The table below overrides every ask in the skills you run from here.
 Run `run-bundle` as `AUTOPILOT` (an uninterrupted run); it passes the rule to its workers.
 
-A message without a tool call ends your turn, and on autopilot nobody restarts it. A status
+A message without a tool call ends your turn, and on autopilot nobody restarts it (the same
+holds outside autopilot, see the coordinator rules of
+[delegation](../task-layout/references/roles-and-models.md#coordinator)). A status
 note is welcome, but it goes in the same message as the next tool call. Do not end a turn on
 a summary that announces the next stage, on an offer to continue, or because a stage is a
 good place to report: start the next stage.
@@ -181,7 +184,7 @@ good place to report: start the next stage.
 | ambiguous goal, several candidate files | the reading most consistent with the bundle's accepted documents |
 | blocking owner question, open decision | the option the document recommends; a technical question with no recommendation that meets the three conditions of [`consilium`](../consilium/SKILL.md) → convene it, its result is the choice; else the smallest reversible one that keeps existing contracts and data |
 | batch plan, merge into the WIP branch | proceed |
-| task left in `review` | the worker's `validate-task` verdict is the acceptance: `validated`, `_VAL` |
+| task left in `review` | the worker's `validate-task` verdict is the acceptance: `validated` |
 | replan signal, "code moved ahead" | `write-task TNN` passes detail, slices, validation from the worker's file-and-line list, then rerun the task; a second signal on the same task ends the run |
 
 Record each decision where its question was: under the document's decisions as
@@ -191,7 +194,8 @@ after a failed check; its `Reopens when` names an observation, not `never`. Only
 decision the user made is `owner`.
 
 Never on autopilot, whatever the documents say: push, deploy, release, package publishing,
-production, secrets, credentials, deleting customer data, editing an applied migration. Skip
+production, secrets, credentials, deleting stored data (and choosing an option whose effect is
+to delete it: take the option that keeps the data), editing an applied migration. Skip
 that step, list it in the report, continue with the rest.
 
 The run ends (with the report, still no question) only when it cannot move forward:

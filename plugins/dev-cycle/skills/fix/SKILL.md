@@ -231,8 +231,14 @@ the independent check does step 1 and the developer steps 2–5.
 1. Rerun the original reproduction: the same action as in the report, in the same safe
    place as in phase 2. A new test that passes is not enough on its own. A defect that was
    shown by the code and never by a run: the regression test is the check.
-2. Run the profile's `format`, `lint` and `test`; `{path}` is the directory of each touched
-   package. A command the profile does not have: ask once, as the profile rules say; on
+2. Run the profile's `format`, `lint` and `test`; `{path}` is the touched files, the tests
+   that assert the changed behaviour, and the tree of the touched package when one run of it
+   takes seconds. A package whose run is slow (over two or three minutes) is not run whole:
+   run the focused tests and say in the report which full run you skipped. Before you edit
+   a visible string or an ordered output, grep every test and document for every spelling of
+   the old value, and update them in the same commit; run the affected tree before you merge,
+   not after (see [Test runs](../task-layout/references/roles-and-models.md#test-runs)).
+   A command the profile does not have: ask once, as the profile rules say; on
    autopilot take the command that the project's own files show (package scripts, CI
    configuration) and name it in the report.
 3. `known_issues`: remove the item when the defect is fully fixed, or narrow it, as the

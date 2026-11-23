@@ -11,6 +11,7 @@ Contents:
 - [Layers](#layers)
 - [Unit size](#unit-size)
 - [Parallel work](#parallel-work)
+- [Test runs](#test-runs)
 - [Brief](#brief)
 - [Roles](#roles)
 - [Tiers and effort](#tiers-and-effort)
@@ -53,7 +54,15 @@ the report.
 - A unit is not done while something it started is still running (a background command, a
   helper). Wait for it.
 - Shared documents (`02-task-sequence.md` rows, README indexes) have one writer between
-  waves: you.
+  waves: you. A worker does not edit them.
+- A message without a tool call ends your turn, with or without autopilot. While work is
+  open, every message carries the next tool call; a status note goes in the same message.
+  Do not stop to report because a task or a wave finished.
+- A notice that an agent "is waiting on its own background work" is not a return. Do not
+  answer it, do not tell the user, do not start a monitor for it. Act on a return, a
+  question or a failure.
+- Relay a return as one verdict line, the counts, and the decisions it needs from the user.
+  The criteria matrix and command output stay in `evidence/`.
 
 ## Layers
 
@@ -126,6 +135,45 @@ architect, an `SNN` item for a helper.
     `format`, `lint` and the tests, and commits.
 - Any doubt about overlap: run in sequence.
 
+## Test runs
+
+A test run costs wall-clock time, and every worker that repeats it pays again. Most of the
+time lost in the measured runs was repeated full suites, not slow tests. These rules apply to
+every skill that runs tests; a project's `boundaries` line may tighten them, never loosen.
+They limit what runs, not what a worker may spend: they are not a token budget.
+
+- **Inside a task: focused.** The commands the acceptance criteria name, plus the profile's
+  `test` on the paths the change touches and on their direct consumers. Before editing
+  behaviour that tests assert (an order, a label, a message), grep every test and document
+  that asserts the old value, by every spelling of it, and update them in the same pass.
+- **A full package or suite is not a task check.** It runs in a task only when a criterion
+  names it, or the task changes shared code (router, store, shared UI, schema, migration,
+  generated contract). Then it runs once, last, after `format` and `lint`.
+- **One gate.** The coordinator runs the profile's full suites once on the merged head, after
+  the last merge (or the last merge of the target branch into the bundle branch), not once
+  per task. A failure outside a task's own tests: rerun that test alone once; a flake listed
+  in the known issues is not a task failure; otherwise map it to the task whose work areas
+  hold the code and brief that task's developer.
+- **Record every run that backs a claim** in `evidence/TNN-<slug>-run.md` with the commit
+  SHA, the command, the exit code and the runner's summary line (`passed … in N s`,
+  `Test Files`/`Tests`/`Duration`). When you filter output, keep that line and the names of
+  failing tests.
+- **Do not repeat a green run.** A run an earlier agent recorded green on the same code is
+  cited, not rerun. "Same code" means `git diff --quiet <sha> HEAD -- <code paths>` is clean:
+  status and evidence commits change `HEAD`, not the code. The QA developer runs the task's
+  tests and its own mutations, not the developer's full run. A mutation drill runs the one
+  test that covers the mutated code, and the touched package once after the last revert.
+- **A long run is one background command and one wait.** Start it as a background command and
+  wait for its single completion notice. No polling loop, no monitor per run, no foreground
+  command with `sleep`. A worker that waits on its own run does not return until the result
+  is in. Where the host has no background commands, use a foreground timeout from the profile.
+- **Shared state is one runner at a time.** One test runner on a shared database. Helpers do
+  not start tests that use it. In a parallel wave workers run focused tests, type-check and
+  lint; a full web suite runs only on a quiet machine, otherwise timeouts look like failures.
+- **Estimate from measurement.** The wait for a gate comes from the last recorded duration in
+  `evidence/`, not from memory. A package that took over two or three minutes in one run is
+  slow: say so in the profile (`boundaries` or a note beside `test`) with its timeout flag.
+
 ## Brief
 
 Write the brief for a capable colleague who has never seen this project: what to do, what it
@@ -156,7 +204,15 @@ Add these lines where they apply:
   end." Workers at `low` and `medium` effort need it most: they stop early more often.
 - A worker that changes code: "Before you report done, run a real check that exercises the
   change: the task's tests, the type-check or the build. A check that failed to start does
-  not count. If no real check can run here, say which one you did not run and why."
+  not count. If no real check can run here, say which one you did not run and why. Test runs
+  follow the Test runs rules of the delegation reference: focused by default, no repeat of a
+  green run on the same code, one background command per long run, the summary line in the
+  evidence."
+- A worker in a worktree: "No `git stash`: the stash is shared by every worktree. Write
+  scratch files only in your own directory under the scratchpad. Stop a process only by a PID
+  you started and recorded, never by port or by name. When a check fails and you investigate,
+  read the unfiltered output. On a CRLF checkout change files with `Edit`, not with a
+  scripted replace."
 
 Keep out of a brief:
 
@@ -170,7 +226,8 @@ Keep out of a brief:
   instruction and return format last.
 
 Return shape: the result first, then the evidence, then open questions. `partial` when
-unfinished, with the list of what is left.
+unfinished, with the list of what is left. Ask for at most about 20 lines: the criteria
+matrix and the command output go to the evidence file, the return links it.
 
 ## Roles
 
@@ -184,6 +241,11 @@ unfinished, with the list of what is left.
 | slice helper | one `SNN` item: a patch, tests for a ready criterion, an evidence pack | inside `execute-task` | everyday, `medium`; mechanical → light, `medium` |
 | researcher | read-only search in code and documents, evidence packs | evidence packs, drift checks, lookups | light: `low` for a short lookup, `medium` for an evidence pack; synthesis across sources → everyday, `medium` |
 | release manager | merges, `tidy-folder`, evidence, final report | `run-bundle` phases 4–5; `tidy-folder`; consilium | light, `medium`; conflicts → everyday, `medium` |
+
+The task's `signals:` field ([proportion](../SKILL.md#proportion)) picks the starting tier
+inside a row: `[]` → the row's lower value (everyday developer, everyday QA at `high`);
+a non-empty list or a missing field → the row's strong value, and QA is strong, `high`.
+Model notes still override it.
 
 A role agent runs a whole skill and decides what that skill decides. A slice helper makes no
 architectural decisions (`write-task` principle 8). No role pushes, deploys or publishes

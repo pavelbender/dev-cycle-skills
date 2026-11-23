@@ -75,7 +75,7 @@ known-issues list.
 | --- | --- |
 | Where does the interaction live? | workflow guide, console map, CLI doc |
 | Who are the actors? | access docs, roles, current tasks |
-| What exists? | routes, commands, `_DONE` tasks, tests, screenshots in `evidence/` |
+| What exists? | routes, commands, `done` tasks, tests, screenshots in `evidence/` |
 | What is visible? | entities, schemas, API responses, config files |
 | What fails? | permissions, validation, revoked states, missing context |
 | How to prove? | component and browser tests, CLI smoke, manual acceptance steps |

@@ -3,7 +3,7 @@ name: validate-task
 description: >-
   Validate a completed development task against its task file: check every acceptance
   criterion with proof from code, tests and commands, classify each drift as benign or bug,
-  check failure paths, fix or escalate, set status validated and the _VAL suffix. Use when
+  check failure paths, fix or escalate, set status validated in the frontmatter. Use when
   asked to validate, verify, accept or review a completed task («провалидируй задачу»,
   «проверь выполненное», «приёмка T07», "validate T07").
 argument-hint: "<task-file-path> [diff|branch|commit]"
@@ -19,7 +19,7 @@ Input: path to the task file; when available also the changed-file list, a diff,
 commit. Claude Code passes arguments as `$ARGUMENTS`; Codex in the request text.
 
 No explicit target → find the last unambiguously completed task in the current thread (task
-file reference, "implemented" claim, rename to `_DONE`). One candidate → take it and say why
+file reference, "implemented" claim, `status: done`). One candidate → take it and say why
 the choice is unambiguous. Several or none → ask. Never invent a task file or substitute a
 "similar-looking" one.
 
@@ -37,7 +37,7 @@ Validation matrix, proof paths, commands in compact English. Identifiers and err
 ## Context
 
 Root `AGENTS.md` and its `## Dev cycle` profile, nearest local `AGENTS.md`,
-[`task-layout`](../task-layout/SKILL.md) (frontmatter, suffixes), decision records and glossary
+[`task-layout`](../task-layout/SKILL.md) (frontmatter, status), decision records and glossary
 when the profile names them. Executable truth (migrations, schemas, tests) beats prose: on
 conflict the schema wins.
 
@@ -50,6 +50,9 @@ conflict the schema wins.
 5. A bug demands action: fix, or stop for replan when the task file is stale.
 6. Re-validation after fixes is mandatory.
 7. Failure paths matter as much as the happy path.
+8. Mutation drills and negative controls follow the task's `signals:`: only for criteria on a
+   signal's path; `signals: []` takes none. A defect outside the task is one line in the
+   report, not an investigation.
 
 ## Phase 1. Extract checks
 
@@ -131,11 +134,19 @@ failure paths and commands of the touched slice.
 
 After code edits run the profile's `format` and `lint`.
 
+Test runs follow the [Test runs](../task-layout/references/roles-and-models.md#test-runs)
+rules. The developer's run that the evidence records green on the same code is cited, not
+repeated: you run the criteria's own commands and your own mutation drills. A mutation drill
+runs the one test that covers the mutated code, then the touched package once after the
+last revert. Run the full package or suite only when the developer's evidence has no green
+run on this code, or you changed code outside the tests. Record each run with the commit SHA
+and the runner's summary line. When the developer's mutation table is in the evidence, check
+a sample of it (at least one row per hard-signal criterion) and add your own.
+
 ## Phase 7. Status and report
 
 On "matches" (with or without fixes): frontmatter `status: validated`, `**Status:**` line with
-date and link to the evidence, rename to `_VAL` (from `_DONE`, or from no suffix when
-acceptance and validation coincide), links updated. Proof of a `PNN` goes to
+date and link to the evidence. The file keeps its name. Proof of a `PNN` goes to
 `evidence/PNN-<slug>.md`. The criteria matrix, commands and drift list go to
 `evidence/TNN-<slug>-validation.md`, never into the task file.
 
@@ -177,4 +188,4 @@ main conversation convenes a [`consilium`](../consilium/SKILL.md).
 - [ ] Bugs fixed or escalated to replan.
 - [ ] Invariants, contracts, failure paths checked.
 - [ ] Re-validation after fixes done.
-- [ ] Status, suffix and links updated; verdict unambiguous.
+- [ ] Status and links updated; verdict unambiguous.
