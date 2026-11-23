@@ -63,13 +63,18 @@ out=$(bash "$script" "$b");                    has evidence "stage: 9 close"; ha
 # a task file without frontmatter: status from the suffix, blocked_by from the sequence; CRLF input
 b=$tmp/c; mkdir -p "$b/tasks"; touch "$b/01-workflow.md"; sequence "$b"
 printf '# Task: old\r\n' >"$b/tasks/T01-x_DONE.md"; printf '# Task: old\r\n' >"$b/tasks/T02-x.md"
-printf -- '---\r\nid: T03\r\nstatus: in_progress   # started\r\nblocked_by: [T01]\r\nblocks: [T04]\r\npass: validation\r\n---\r\n' >"$b/tasks/T03-x.md"
+printf -- '---\r\nid: T03\r\nstatus: in_progress   # started\r\nblocked_by: [T01]\r\nblocks: [T04]\r\npass: validation\r\nsignals: [authz, schema]   # hard\r\n---\r\n' >"$b/tasks/T03-x.md"
 out=$(bash "$script" "$b");                    has legacy "T01 | done | - | - | - |"; has legacy "T02 | formed | - | yes | T01"
 has legacy "T03 | in_progress | validation | yes | T01"; has legacy "stage: 4 drafts"
+has legacy "tasks/T03-x.md | [authz, schema] | -"; has legacy "tasks/T02-x.md | ? | old"
 mkdir -p "$tmp/docs/_completed/z/tasks"; touch "$tmp/docs/_completed/z/01-workflow.md"; sequence "$tmp/docs/_completed/z"
 for t in T01 T02 T03 T04 T05 T06; do task "$tmp/docs/_completed/z" "$t-x_VAL.md" validated "" ""; done
 mkdir "$tmp/docs/_completed/z/evidence"; touch "$tmp/docs/_completed/z/evidence/P01-s.md"
 out=$(bash "$script" "$tmp/docs/_completed/z"); has completed "stage: closed"
 win=$(printf '%s' "$tmp/docs/_completed/z" | tr / '\\')   # the same bundle as a backslash path
 out=$(bash "$script" "$win");                  has backslash-path "stage: closed"
+# a domain folder: every open bundle under it, closed ones left out
+mkdir -p "$tmp/dom/billing"; cp -r "$tmp/c" "$tmp/dom/billing/c"; mkdir -p "$tmp/dom/_completed"; cp -r "$tmp/docs/_completed/z" "$tmp/dom/_completed/z"
+out=$(bash "$script" "$tmp/dom");              has domain "bundles under"; has domain ": 1"; has domain "T03 | in_progress | validation | yes | T01"
+if grep -q "_completed" <<<"$out"; then echo "FAIL domain: closed bundle listed"; fail=1; else echo "ok   domain: closed bundle left out"; fi
 exit $fail

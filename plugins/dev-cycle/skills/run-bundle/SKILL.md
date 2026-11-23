@@ -48,7 +48,7 @@ project profile ([`task-layout`](../task-layout/SKILL.md#project-profile)).
 ## Phase 1. Status map
 
 Run `bash ../task-layout/scripts/bundle-status.sh <bundle>` (the path is relative to this
-file; on Windows in Git Bash, which is the Bash tool of Claude Code): it prints this table from `02-task-sequence.md` and the task frontmatter. Without
+file; on Windows in Git Bash, which is the Bash tool of Claude Code): it prints this table (plus `signals` and the title) from `02-task-sequence.md` and the task frontmatter. Without
 bash, read `02-task-sequence.md` and every `tasks/TNN-*.md` yourself; without frontmatter:
 `status` from the suffix of an older file, else `formed`; `blocked_by` from the sequence's `Depends on`. Table:
 

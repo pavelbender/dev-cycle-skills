@@ -253,7 +253,8 @@ evidence files, `SNN` are subagent-ready items inside a task. Published IDs are 
 renumbered.
 
 `plugins/dev-cycle/skills/task-layout/scripts/bundle-status.sh <bundle>` prints the status
-map, the dependency waves and the current stage of any bundle.
+map, the dependency waves and the current stage of any bundle. Given a domain folder, it prints every
+open bundle under it. Each task row carries its status, `signals` and title.
 
 ## Roles, models and delegation
 

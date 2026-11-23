@@ -21,7 +21,9 @@ Every other skill of this set (`cycle`, `fix`, `plan-scenarios`, `plan-feature`,
 are `cycle`, `fix`, `consilium` and `automation`; the stage skills are read by path from
 those.
 [`scripts/bundle-status.sh`](scripts/bundle-status.sh) prints the status map of a bundle from
-the files this contract defines. A skill that hands
+the files this contract defines: one row per task with status, readiness, dependencies,
+work areas, `signals` and the task title. Given a domain folder it prints every open bundle
+under it. A skill that hands
 work to a subagent also follows [delegation](references/roles-and-models.md): when to
 delegate, layers, unit size, parallel work, the brief, roles, models and effort. It keeps
 scenarios, workflows, task sequences, implementation tasks and evidence of one feature in one

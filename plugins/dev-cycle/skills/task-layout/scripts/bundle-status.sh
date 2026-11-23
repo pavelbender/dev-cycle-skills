@@ -9,6 +9,16 @@ set -euo pipefail
 b=${1:?usage: bundle-status.sh <bundle-dir>}; b=${b//\\//}; b=${b%/}   # accept a Windows path
 [ -d "$b" ] || { echo "not a directory: $b" >&2; exit 1; }
 
+# A folder that is not a bundle (a domain root): print the status map of every bundle under it,
+# closed bundles in _completed/ left out.
+if [ ! -d "$b/tasks" ] && [ ! -f "$b/02-task-sequence.md" ]; then
+    mapfile -t found < <(find "$b" -maxdepth 4 -type f -name 02-task-sequence.md -not -path "*/_completed/*" | sort)
+    [ ${#found[@]} -gt 0 ] || { echo "no bundle under: $b" >&2; exit 1; }
+    echo "bundles under $b: ${#found[@]}"
+    for f in "${found[@]}"; do echo; bash "$0" "${f%/*}"; done
+    exit 0
+fi
+
 yn() { [ -f "$1" ] && echo yes || echo no; }
 shopt -s nullglob
 tasks=("$b"/tasks/T[0-9]*.md)
@@ -60,17 +70,19 @@ fm {
     else if ($0 ~ /^blocked_by:/) { dep[id] = ids(value($0)); hasdep[id] = 1 }
     else if ($0 ~ /^pass:/) pass[id] = value($0)
     else if ($0 ~ /^milestone:/) milestone[id] = value($0)
+    else if ($0 ~ /^signals:/) signals[id] = value($0)
 }
+!fm && !(id in title) && /^# / { t = $0; sub(/^#[ 	]+(Task:[ 	]*)?/, "", t); title[id] = t }
 END {
     for (i = 1; i <= n; i++) { id = order[i]; if (!(id in hasdep)) dep[id] = seqdep[id] }
-    print ""; print "ID | status | pass | ready | blocked_by | milestone | work areas | file"
+    print ""; print "ID | status | pass | ready | blocked_by | milestone | work areas | file | signals | title"
     for (i = 1; i <= n; i++) {
         id = order[i]
-        if (!(id in file)) { print id " | - | - | - | " (seqdep[id] == "" ? "-" : seqdep[id]) " | - | " (id in areas ? areas[id] : "-") " | MISSING"; missing = missing " " id; continue }
+        if (!(id in file)) { print id " | - | - | - | " (seqdep[id] == "" ? "-" : seqdep[id]) " | - | " (id in areas ? areas[id] : "-") " | MISSING | - | -"; missing = missing " " id; continue }
         if (!(id in inseq) && nseq()) extra = extra " " id
         bl = blockers(id)
         ready = finished(id) || status[id] == "withdrawn" ? "-" : (bl == "" ? "yes" : "no: " bl)
-        print id " | " status[id] " | " (id in pass ? pass[id] : "-") " | " ready " | " (dep[id] == "" ? "-" : dep[id]) " | " (id in milestone ? milestone[id] : "-") " | " (id in areas ? areas[id] : "-") " | tasks/" file[id]
+        print id " | " status[id] " | " (id in pass ? pass[id] : "-") " | " ready " | " (dep[id] == "" ? "-" : dep[id]) " | " (id in milestone ? milestone[id] : "-") " | " (id in areas ? areas[id] : "-") " | tasks/" file[id] " | " (id in signals ? signals[id] : "?") " | " (id in title ? title[id] : "-")
     }
     print ""
     k = split(evidence, e, " "); for (i = 1; i <= k; i++) have[e[i]] = 1

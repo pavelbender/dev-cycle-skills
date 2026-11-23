@@ -22,6 +22,9 @@ and a coordinator turn that ended with work open.
   and read by every later stage. `[]` means none: short route, short task form, no mutation
   drills, everyday-tier developer and QA. A list keeps the full route, mutation drills on the
   criteria it touches and a strong-tier QA. A missing field means hard.
+- **`bundle-status.sh` lists tasks with `signals` and the title**, and given a domain folder
+  prints every open bundle under it, so a coordinator gets all task files, statuses and
+  frontmatter in one call.
 - **Four more hard signals:** a redirect or untrusted input; concurrency or locks; deleting
   files outside the database; secrets or a rollout step.
 - **Findings outside the task are one line** in the report, not an investigation. Visual work
