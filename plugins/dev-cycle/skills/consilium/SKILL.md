@@ -199,7 +199,7 @@ Add a model notes row per member, task kind `consilium`.
 
 In the user's language, for a reader who has not seen the rounds: the decision first, how it
 was reached, the dissent, the conditions and follow-ups, where it is recorded, and the
-members with model and effort.
+members with model and effort. Write it per [Reports](../task-layout/SKILL.md#reports).
 
 ## Anti-patterns
 

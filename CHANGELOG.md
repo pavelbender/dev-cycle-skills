@@ -8,6 +8,21 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+### Added
+
+- **Rules for explanations to the owner.** `task-layout` Reports gains three rules: read a
+  decision record again and cite its ID and path before explaining it, back "unchanged" or
+  "verified" with a `file:line` read in the turn or write "not checked", and correct a wrong
+  statement as "I said X. It is Y. This changes Z" instead of calling it wording.
+  `plan-feature` and `consilium` reports now link Reports. `examples/AGENTS.dev-cycle.md`
+  carries the same rules plus an on-demand "check claims" step, because plain chat loads no
+  skill.
+
+### Upgrade notes
+
+- Paste the new "Explaining to the owner" section of `examples/AGENTS.dev-cycle.md` into your
+  project's `AGENTS.md` or `CLAUDE.md`.
+
 ## [0.7.1] - 2026-11-23
 
 ### Added

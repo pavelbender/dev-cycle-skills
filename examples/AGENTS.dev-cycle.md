@@ -22,3 +22,17 @@
 - job_notes: docs/agent-jobs.md
 - probe_notes: docs/probe-notes.md
 - model_notes: .dev-cycle/model-notes.md
+
+## Explaining to the owner
+
+<!-- Applies to every reply, with or without a dev-cycle skill loaded. -->
+
+- Explaining a recorded decision, permission or contract: read the record again first. Cite
+  its ID and path. State who acts, on what, with which right.
+- "Unchanged", "verified", "no effect": name the `file:line` you read in this turn, or write
+  "not checked".
+- A wrong statement of yours: write "Correction: I said X. It is Y. This changes Z for your
+  decision." Never call a factual error wording.
+- "Check claims": hand the claims of your last reply to a fresh read-only agent
+  (`dev-cycle:researcher` where the host has it). Relay its `file:line` or "not confirmed"
+  per claim.
