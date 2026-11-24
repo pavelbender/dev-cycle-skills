@@ -61,7 +61,7 @@ them (`INV-1`, …) unless the project has its own scheme.>
 
 | ID | Decision | Source | Reopens when |
 | --- | --- | --- | --- |
-| D-01 | <what was decided> | owner \| proposed | <never, or the observation: "after the first render"> |
+| D-01 | <what was decided>; on rights or contracts add "Actor: <who acts, with which right>. Affected: <who only receives the effect, and what they need>" | owner \| proposed | <never, or the observation: "after the first render"> |
 
 ## Workflow acceptance criteria
 

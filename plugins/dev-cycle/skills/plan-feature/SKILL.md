@@ -148,6 +148,9 @@ Record the source of each decision: `owner` (the owner said it, in the request o
 answer) or `proposed` (a planning agent chose it and the owner has not objected). A
 `proposed` decision stands until the owner says otherwise; do not record it as the owner's.
 A row that carries an `autopilot:` marker is always `proposed`.
+A decision on rights, permissions or a contract names the actor (who acts, with which right)
+and the affected (who only receives the effect, and what they need). A later explanation
+cites the row, and it cannot cite an actor the row leaves out.
 A `proposed` choice of stack, library or look, made before anything was rendered or run,
 also names the observation that reopens it, for example "revisit after the first render".
 
