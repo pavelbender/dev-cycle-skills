@@ -230,6 +230,12 @@ its own.
 - A list for separate items, prose where the ideas connect.
 - Say what you did not check. A report that claims more than was verified costs the reader a
   second pass.
+- Explaining a recorded decision, permission or contract: read the record again first. Cite
+  its ID and path. State who acts, on what, with which right.
+- "Unchanged", "verified", "no effect": name the `file:line` you read in this turn, or write
+  "not checked".
+- A wrong statement of yours: write "Correction: I said X. It is Y. This changes Z for your
+  decision." Never call a factual error wording.
 
 ## Readiness
 

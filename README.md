@@ -98,7 +98,9 @@ What that gives you:
    ```
 
 2. Tell it about your project. Paste [`examples/AGENTS.dev-cycle.md`](examples/AGENTS.dev-cycle.md)
-   into the root `AGENTS.md` (or `CLAUDE.md`) and edit the commands and paths.
+   into the root `AGENTS.md` (or `CLAUDE.md`) and edit the commands and paths. Its section
+   "Explaining to the owner" is the only part that reaches plain chat, where no skill is
+   loaded: keep it.
 
 3. Open a new session and give it an intent.
 
