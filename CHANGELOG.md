@@ -8,6 +8,8 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+## [0.7.2] - 2026-11-24
+
 ### Added
 
 - **Rules for explanations to the owner.** `task-layout` Reports gains three rules: read a
