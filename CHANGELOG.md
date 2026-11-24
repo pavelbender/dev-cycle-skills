@@ -17,6 +17,10 @@ minor version may change behaviour; such changes are listed under **Changed** an
   `plan-feature` and `consilium` reports now link Reports. `examples/AGENTS.dev-cycle.md`
   carries the same rules plus an on-demand "check claims" step, because plain chat loads no
   skill.
+- **Decision rows on rights name the actor and the affected.** `plan-feature` and its
+  workflow template ask a `D-*` row on rights, permissions or a contract for "Actor: …
+  Affected: …". On the chat stand, explanations named the actor of such a decision in 0/5
+  replies without it and 5/5 with it.
 
 ### Upgrade notes
 

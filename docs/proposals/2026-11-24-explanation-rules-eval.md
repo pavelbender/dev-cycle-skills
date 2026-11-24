@@ -76,3 +76,11 @@ Findings:
   The fix belongs in the record: a decision row on rights names the actor and the affected
   roles.
 - n = 5 per cell, one judge: direction, not a rate.
+
+### Follow-up: actor in the record
+
+Variant `rec`: rules on, plus one sentence in the D-11 row naming the actor (holder of
+`package.manage`) and the affected (receivers need only `<class>.use`, enable nothing).
+F1: 4/5 pass, D-11 actor 5/5 (was 0/5), D-07 scope 4/5. Cost per reply $0.150 (on: $0.101),
+because the reply now explains the actor. Adopted: `plan-feature` asks rights decisions for
+"Actor: … Affected: …".
