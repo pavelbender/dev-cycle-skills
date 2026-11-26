@@ -81,6 +81,7 @@ asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
    working" and "real check" lines.
 
    ```text
+   TAG      bundle=<bundle dir> task=<Tnn> stage=execute
    ROLE     developer; <model>, <effort>
    GOAL     implement the task so that every acceptance criterion passes
    READ     <skills dir>/execute-task/SKILL.md <task file path>
@@ -97,6 +98,7 @@ asked for an uninterrupted run (`AUTOPILOT` from `cycle --auto` is one).
    sees the result without the developer's assumptions:
 
    ```text
+   TAG      bundle=<bundle dir> task=<Tnn> stage=validate
    ROLE     QA developer; <model>, <effort>
    GOAL     prove or disprove that the result satisfies the task file
    READ     <skills dir>/validate-task/SKILL.md <task file path>

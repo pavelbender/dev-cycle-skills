@@ -182,6 +182,7 @@ is for, where to work, what done looks like. Give the reason with a constraint (
 rule did not name.
 
 ```text
+TAG      bundle=<bundle dir> task=<Tnn|-> stage=<execute|validate|plan|fix|probe|…>
 ROLE     <role>; <model>, <effort>
 GOAL     <one outcome, and what it is for>
 READ     <skill file to follow, with its arguments> | <files and symbols to start from>
@@ -194,6 +195,9 @@ RETURN   <exact report shape>; questions for the user and `needs consilium` go h
 COMMIT   <your files, per Git hygiene, before you return | do not commit: the parent commits>
 MODE     <the autopilot line, when on>
 ```
+
+`TAG` is for `scripts/run-report.py`, which joins each subagent transcript to its bundle, task
+and stage; the worker needs no action on it.
 
 Add these lines where they apply:
 
@@ -285,10 +289,11 @@ How the Agent call works:
 
 - Agent type. Roles that write, and helpers that must run a command (git history, a test
   run), use the general-purpose type (`general-purpose`), unless the project defines a custom
-  agent for the role. The plugin ships two read-only types whose tools cannot edit files or
-  run commands: `dev-cycle:researcher` for the researcher role (reads and searches only;
+  agent for the role. The plugin ships two read-only types that inherit the session's tools (a code-graph
+  MCP included) minus editing, the shell and subagents (`disallowedTools`): `dev-cycle:researcher` for the researcher role (reads, searches, web;
   defaults `haiku`, `medium`) and `dev-cycle:consilium-member` for consilium seats. Use them
-  where the work is reading: the limit is enforced by the host, not asked for in the brief.
+  where the work is reading: the host enforces the built-in limits; MCP tools that write are
+  barred only by the type's text, so a brief near such tools still says `SCOPE read-only`.
   A `model` or `effort` on the call overrides the type's default. When the host does not
   list these types (Codex, or the skills installed without the plugin), use the
   general-purpose type with `SCOPE read-only` in the brief.

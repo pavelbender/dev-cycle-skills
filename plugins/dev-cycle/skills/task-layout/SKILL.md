@@ -23,7 +23,9 @@ those.
 [`scripts/bundle-status.sh`](scripts/bundle-status.sh) prints the status map of a bundle from
 the files this contract defines: one row per task with status, readiness, dependencies,
 work areas, `signals` and the task title. Given a domain folder it prints every open bundle
-under it. A skill that hands
+under it. [`scripts/run-report.py`](scripts/run-report.py) reads the Claude Code transcripts of a run and
+prints tokens, test minutes, polling loops, repeated test runs and files read twice per agent,
+labelled by the `TAG` line of the brief. A skill that hands
 work to a subagent also follows [delegation](references/roles-and-models.md): when to
 delegate, layers, unit size, parallel work, the brief, roles, models and effort. It keeps
 scenarios, workflows, task sequences, implementation tasks and evidence of one feature in one

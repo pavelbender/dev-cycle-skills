@@ -103,11 +103,11 @@ seat as a narrowed lens.
 Model and effort: each member runs on the first tier its row of the roles table names, at
 `high` whatever effort that row gives: a seat is judgment work. The researcher is the exception: everyday tier, `medium`, because a position is
 synthesis. Members are read-only: no edits, no commits, no commands, no helpers. Claude
-Code: seat every member as the agent type `dev-cycle:consilium-member`, whose tools (read and
-search only) enforce that; pass the role's `model` and the effort on the call. Where that
+Code: seat every member as the agent type `dev-cycle:consilium-member`, which inherits the session's
+tools (the code graph included) minus editing, the shell, the web and subagents; pass the role's `model` and the effort on the call. Where that
 type is missing (Codex): a normal spawn with `SCOPE read-only` in the brief. The researcher
-seat needs the web, which that type cannot reach: seat it as a general-purpose agent with
-`SCOPE read-only`, or put the outside facts into the question pack yourself.
+seat needs the web, which that type cannot reach: seat it as `dev-cycle:researcher`, which
+keeps the web, or put the outside facts into the question pack yourself.
 
 ## Phase 3. Round 1: independent positions
 

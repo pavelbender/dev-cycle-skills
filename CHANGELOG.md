@@ -8,6 +8,25 @@ minor version may change behaviour; such changes are listed under **Changed** an
 
 ## [Unreleased]
 
+## [0.7.3] - 2026-11-26
+
+### Changed
+
+- **`dev-cycle:researcher` and `dev-cycle:consilium-member` inherit the session's tools.**
+  The `tools: Read, Grep, Glob` allowlist is replaced by `disallowedTools` (editing, shell, scheduling, publishing,
+  subagents; for the consilium member also the web), so the agents reach the project's
+  code-graph MCP and its hooks. The researcher gains the web and can take the consilium's
+  researcher seat. MCP tools that write are barred by the agent text only.
+
+### Added
+
+- **`task-layout/scripts/run-report.py`.** Reads Claude Code transcripts (main thread and
+  subagents) and prints per agent: tokens, tool calls, test minutes, polling-loop minutes and
+  files read twice; totals add identical test commands run more than once. `--since`, `--until`,
+  `--bundle`, `--totals`. Replaces hand-collected run reports with numbers from the transcript.
+- **`TAG` line in the brief** (`bundle=… task=Tnn stage=…`), set in the delegation brief and the
+  `run-bundle` developer and QA briefs, so a subagent transcript joins to its bundle and task.
+
 ## [0.7.2] - 2026-11-24
 
 ### Added
